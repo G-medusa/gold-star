@@ -1,0 +1,20 @@
+[
+  {
+    "slug": "how-to-choose-online-casino",
+    "title": "How to Choose an Online Casino",
+    "description": "A step-by-step guide to picking a safe and reliable online casino.",
+    "content": "Check licensing, security, payment methods, bonus terms, and reputation before you play.",
+    "faq": [
+      {
+        "question": "How do I know a casino is safe?",
+        "answer": "Look for a valid license, HTTPS/SSL, clear terms, and a solid reputation."
+      },
+      {
+        "question": "What matters more: bonus or reputation?",
+        "answer": "Reputation and licensing always come first. Bonuses are secondary."
+      }
+    ],
+    "relatedCasinos": ["stake", "bet365"],
+    "relatedCountries": ["AU"]
+  }
+]

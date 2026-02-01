@@ -1,65 +1,178 @@
-import Image from "next/image";
+// app/page.tsx
+import Link from "next/link";
 
-export default function Home() {
+import { getCasinos } from "@/lib/casinos";
+import { getCountries } from "@/lib/countries";
+import { getGuides } from "@/lib/guides";
+
+function topBy<T>(arr: T[], take: number) {
+  return arr.slice(0, Math.max(0, take));
+}
+
+export default async function HomePage() {
+  const [casinos, countries, guides] = await Promise.all([
+    getCasinos(),
+    getCountries(),
+    getGuides(),
+  ]);
+
+  const topCasinos = topBy(
+    [...casinos].sort((a: any, b: any) => (Number(b.rating) || 0) - (Number(a.rating) || 0)),
+    6
+  );
+
+  const popularCountries = topBy([...countries], 8);
+  const latestGuides = topBy([...guides], 6);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="grid" style={{ gap: 18 }}>
+      {/* HERO */}
+      <section className="card" style={{ padding: 22 }}>
+        <div className="grid" style={{ gap: 10 }}>
+          <div className="badge">⭐ Gold Star</div>
+
+          <h1 className="h1">Casino reviews, countries & guides — clean and fast.</h1>
+
+          <p className="p" style={{ maxWidth: 820 }}>
+            We help players compare casinos, understand regional availability, and learn with practical
+            guides. Built for speed, clarity, and SEO.
           </p>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
+            <Link className="navlink" href="/casinos">
+              Browse casinos
+            </Link>
+            <Link className="navlink" href="/countries">
+              Explore countries
+            </Link>
+            <Link className="navlink" href="/guides">
+              Read guides
+            </Link>
+
+            <span className="kbd">SSG</span>
+            <span className="kbd">Schema.org</span>
+            <span className="kbd">OG images</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* 3 CARDS */}
+      <section className="grid grid-2">
+        <div className="card">
+          <h2 className="h2">Casinos</h2>
+          <p className="p">
+            Reviews with ratings, features, and structured data (FAQ/Review/Breadcrumbs).
+          </p>
+          <div className="hr" />
+          <Link href="/casinos">Go to казино-листинг →</Link>
         </div>
-      </main>
+
+        <div className="card">
+          <h2 className="h2">Countries</h2>
+          <p className="p">
+            Country pages show which casinos are available + guides for the region.
+          </p>
+          <div className="hr" />
+          <Link href="/countries">Go to страны →</Link>
+        </div>
+
+        <div className="card">
+          <h2 className="h2">Guides</h2>
+          <p className="p">
+            Educational content with FAQ schema + internal linking to casinos and countries.
+          </p>
+          <div className="hr" />
+          <Link href="/guides">Go to guides →</Link>
+        </div>
+
+        <div className="card">
+          <h2 className="h2">Built for SEO</h2>
+          <p className="p">
+            ItemList + BreadcrumbList, sitemap.xml, robots.txt, and dynamic OG images.
+          </p>
+          <div className="hr" />
+          <p className="small">Next step: polishing detail pages and list cards.</p>
+        </div>
+      </section>
+
+      {/* FEATURED */}
+      <section className="grid grid-2">
+        <div className="card">
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2">Top Casinos</h2>
+            <Link href="/casinos" className="small">
+              all →
+            </Link>
+          </div>
+
+          {topCasinos.length === 0 ? (
+            <p className="p">No casinos yet.</p>
+          ) : (
+            <div className="list" style={{ marginTop: 10 }}>
+              {topCasinos.map((c: any) => (
+                <div key={c.slug} className="item">
+                  <Link href={`/casinos/${c.slug}`}>{c.name}</Link>
+                  <span className="small">{typeof c.rating === "number" ? `⭐ ${c.rating}` : ""}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2">Popular Countries</h2>
+            <Link href="/countries" className="small">
+              all →
+            </Link>
+          </div>
+
+          {popularCountries.length === 0 ? (
+            <p className="p">No countries yet.</p>
+          ) : (
+            <div className="list" style={{ marginTop: 10 }}>
+              {popularCountries.map((c: any) => (
+                <div key={c.code} className="item">
+                  <Link href={`/countries/${c.code}`}>{c.name}</Link>
+                  <span className="small">{c.code}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2">Latest Guides</h2>
+            <Link href="/guides" className="small">
+              all →
+            </Link>
+          </div>
+
+          {latestGuides.length === 0 ? (
+            <p className="p">No guides yet.</p>
+          ) : (
+            <div className="list" style={{ marginTop: 10 }}>
+              {latestGuides.map((g: any) => (
+                <div key={g.slug} className="item">
+                  <Link href={`/guides/${g.slug}`}>{g.title}</Link>
+                  <span className="small">guide</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <h2 className="h2">Next on the roadmap</h2>
+          <p className="p">
+            We’ll polish list cards, add consistent hero sections on detail pages, and tighten internal
+            linking across all sections.
+          </p>
+          <div className="hr" />
+          <p className="small">Next file: <b>app/casinos/page.tsx</b> (cards + sorting + clean layout)</p>
+        </div>
+      </section>
     </div>
   );
 }
