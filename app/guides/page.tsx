@@ -1,7 +1,9 @@
 // app/guides/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+
 import { getGuides } from "@/lib/guides";
+import { jsonLd } from "@/lib/schema";
 
 const SITE_URL =
   (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
@@ -12,19 +14,27 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}/guides` },
 };
 
+type GuideLite = {
+  slug: string;
+  title: string;
+  description?: unknown;
+  relatedCasinos?: unknown;
+  relatedCountries?: unknown;
+};
+
 function buildBreadcrumbJsonLd() {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Guides", item: `${SITE_URL}/guides` },
     ],
-  };
+  });
 }
 
 function buildItemListJsonLd(items: Array<{ name: string; url: string }>) {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "ItemList",
     itemListElement: items.map((it, idx) => ({
@@ -33,23 +43,24 @@ function buildItemListJsonLd(items: Array<{ name: string; url: string }>) {
       name: it.name,
       url: it.url,
     })),
-  };
+  });
 }
 
 export default async function GuidesPage() {
-  const guides = await getGuides();
+  const guidesUnknown = (await getGuides()) as unknown;
+  const guides = Array.isArray(guidesUnknown) ? (guidesUnknown as GuideLite[]) : [];
 
   // Sort by title (if you later add dates, we can sort by date desc)
-  const sorted = [...guides].sort((a: any, b: any) =>
-    String(a?.title ?? "").localeCompare(String(b?.title ?? ""))
+  const sorted = [...guides].sort((a, b) =>
+    String(a.title ?? "").localeCompare(String(b.title ?? ""))
   );
 
   const breadcrumbLd = buildBreadcrumbJsonLd();
 
   const itemListLd = buildItemListJsonLd(
-    sorted.map((g: any) => ({
+    sorted.map((g) => ({
       name: String(g.title ?? g.slug ?? "Guide"),
-      url: `${SITE_URL}/guides/${g.slug}`,
+      url: `${SITE_URL}/guides/${String(g.slug)}`,
     }))
   );
 
@@ -86,7 +97,7 @@ export default async function GuidesPage() {
           </section>
         ) : (
           <section className="grid grid-2">
-            {sorted.map((g: any) => {
+            {sorted.map((g) => {
               const title = String(g.title ?? "Guide");
               const desc = g.description
                 ? String(g.description)
@@ -96,9 +107,9 @@ export default async function GuidesPage() {
               const countriesCount = Array.isArray(g.relatedCountries) ? g.relatedCountries.length : 0;
 
               return (
-                <article key={g.slug} className="card">
+                <article key={String(g.slug)} className="card">
                   <h2 className="h2" style={{ margin: 0 }}>
-                    <Link href={`/guides/${g.slug}`}>{title}</Link>
+                    <Link href={`/guides/${String(g.slug)}`}>{title}</Link>
                   </h2>
 
                   <p className="p">{desc}</p>
@@ -113,7 +124,7 @@ export default async function GuidesPage() {
                   <div className="hr" />
 
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                    <Link href={`/guides/${g.slug}`}>Read guide →</Link>
+                    <Link href={`/guides/${String(g.slug)}`}>Read guide →</Link>
                     <span className="small">Internal linking ready</span>
                   </div>
                 </article>

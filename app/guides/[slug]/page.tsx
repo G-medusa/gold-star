@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getGuides, getGuideBySlug } from "@/lib/guides";
 import { getCasinos } from "@/lib/casinos";
 import { getCountries } from "@/lib/countries";
+import { jsonLd } from "@/lib/schema";
 
 const SITE_URL =
   (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
@@ -14,8 +15,33 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
+type GuideLite = {
+  slug: string;
+  title: string;
+  description?: unknown;
+  content?: unknown;
+  faq?: unknown;
+  relatedCasinos?: unknown;
+  relatedCountries?: unknown;
+};
+
+type CasinoLite = {
+  slug: string;
+  name: string;
+  rating?: unknown;
+  description?: unknown;
+};
+
+type CountryLite = {
+  code: string;
+  name: string;
+  description?: unknown;
+};
+
+type FAQItem = { question: string; answer: string };
+
 function buildBreadcrumbJsonLd(title: string, slug: string) {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
@@ -23,11 +49,11 @@ function buildBreadcrumbJsonLd(title: string, slug: string) {
       { "@type": "ListItem", position: 2, name: "Guides", item: `${SITE_URL}/guides` },
       { "@type": "ListItem", position: 3, name: title, item: `${SITE_URL}/guides/${slug}` },
     ],
-  };
+  });
 }
 
-function buildFaqJsonLd(faq: Array<{ question: string; answer: string }>) {
-  return {
+function buildFaqJsonLd(faq: FAQItem[]) {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: faq.map((qa) => ({
@@ -38,13 +64,37 @@ function buildFaqJsonLd(faq: Array<{ question: string; answer: string }>) {
         text: qa.answer,
       },
     })),
-  };
+  });
+}
+
+function ratingNumber(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function toStringArray(x: unknown): string[] {
+  if (!Array.isArray(x)) return [];
+  return x.map((v) => String(v));
+}
+
+function toFaqArray(x: unknown): FAQItem[] {
+  if (!Array.isArray(x)) return [];
+  const out: FAQItem[] = [];
+  for (const item of x) {
+    if (!item || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    const q = o.question;
+    const a = o.answer;
+    if (typeof q === "string" && typeof a === "string") out.push({ question: q, answer: a });
+  }
+  return out;
 }
 
 /* ------------------------- SSG ------------------------- */
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
-  const guides = await getGuides();
-  return guides.map((g: any) => ({ slug: g.slug }));
+  const guidesUnknown = (await getGuides()) as unknown;
+  const guides = Array.isArray(guidesUnknown) ? (guidesUnknown as GuideLite[]) : [];
+  return guides.map((g) => ({ slug: String(g.slug) }));
 }
 
 /* ------------------------- SEO (dynamic OG) ------------------------- */
@@ -52,7 +102,7 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
-  const guide = await getGuideBySlug(slug);
+  const guide = (await getGuideBySlug(slug)) as unknown as GuideLite | null;
 
   if (!guide) {
     return {
@@ -63,9 +113,10 @@ export async function generateMetadata(
 
   const title = String(guide.title ?? "Guide");
   const description =
-    guide.description?.toString() ||
-    `Read our guide: ${title}. Practical tips, steps, and internal links.`;
-  const url = `/guides/${guide.slug}`;
+    guide.description != null
+      ? String(guide.description)
+      : `Read our guide: ${title}. Practical tips, steps, and internal links.`;
+  const url = `/guides/${String(guide.slug)}`;
 
   const og = `/og?type=guide&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(
     "Step-by-step casino guide"
@@ -95,31 +146,28 @@ export async function generateMetadata(
 export default async function GuidePage({ params }: PageProps) {
   const { slug } = await params;
 
-  const guide = await getGuideBySlug(slug);
+  const guide = (await getGuideBySlug(slug)) as unknown as GuideLite | null;
   if (!guide) notFound();
 
   const breadcrumbLd = buildBreadcrumbJsonLd(String(guide.title), String(guide.slug));
 
-  // Optional internal linking (if your guide has arrays like relatedCasinos/relatedCountries)
-  const casinos = await getCasinos();
-  const countries = await getCountries();
+  // Optional internal linking
+  const casinosUnknown = (await getCasinos()) as unknown;
+  const countriesUnknown = (await getCountries()) as unknown;
 
-  const relatedCasinoSlugs: string[] = Array.isArray((guide as any).relatedCasinos)
-    ? (guide as any).relatedCasinos
-    : [];
+  const casinos = Array.isArray(casinosUnknown) ? (casinosUnknown as CasinoLite[]) : [];
+  const countries = Array.isArray(countriesUnknown) ? (countriesUnknown as CountryLite[]) : [];
 
-  const relatedCountryCodes: string[] = Array.isArray((guide as any).relatedCountries)
-    ? (guide as any).relatedCountries
-    : [];
+  const relatedCasinoSlugs = toStringArray(guide.relatedCasinos).map((s) => s.toLowerCase());
+  const relatedCountryCodes = toStringArray(guide.relatedCountries).map((c) => c.toUpperCase());
 
-  const relatedCasinos = casinos.filter((c: any) => relatedCasinoSlugs.includes(c.slug));
-  const relatedCountries = countries.filter((c: any) => relatedCountryCodes.includes(c.code));
+  const relatedCasinos = casinos.filter((c) => relatedCasinoSlugs.includes(String(c.slug).toLowerCase()));
+  const relatedCountries = countries.filter((c) =>
+    relatedCountryCodes.includes(String(c.code).toUpperCase())
+  );
 
-  // Optional FAQ schema if your data includes it
-  const faq: Array<{ question: string; answer: string }> = Array.isArray((guide as any).faq)
-    ? (guide as any).faq
-    : [];
-
+  // Optional FAQ
+  const faq = toFaqArray(guide.faq);
   const faqLd = faq.length > 0 ? buildFaqJsonLd(faq) : null;
 
   return (
@@ -154,7 +202,7 @@ export default async function GuidePage({ params }: PageProps) {
           </div>
 
           <h1 className="h1" style={{ marginTop: 12 }}>
-            {guide.title}
+            {String(guide.title)}
           </h1>
 
           <p className="p" style={{ maxWidth: 900 }}>
@@ -169,11 +217,9 @@ export default async function GuidePage({ params }: PageProps) {
           <h2 className="h2">Guide</h2>
           <div className="hr" />
 
-          {/* If you store content as string/markdown, we can later render markdown properly.
-              For now: safe text output. */}
-          {(guide as any).content ? (
+          {guide.content ? (
             <div style={{ lineHeight: 1.65, color: "var(--text)" }}>
-              {String((guide as any).content)}
+              {String(guide.content)}
             </div>
           ) : (
             <p className="p">
@@ -198,12 +244,12 @@ export default async function GuidePage({ params }: PageProps) {
             <p className="p">No related casinos linked yet.</p>
           ) : (
             <div className="grid grid-2">
-              {relatedCasinos.map((c: any) => (
-                <div key={c.slug} className="card" style={{ background: "var(--panel)" }}>
+              {relatedCasinos.map((c) => (
+                <div key={String(c.slug)} className="card" style={{ background: "var(--panel)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                    <Link href={`/casinos/${c.slug}`}>{c.name}</Link>
+                    <Link href={`/casinos/${String(c.slug)}`}>{String(c.name)}</Link>
                     <span className="small">
-                      {typeof c.rating === "number" ? `⭐ ${c.rating.toFixed(1)}` : ""}
+                      {ratingNumber(c.rating) > 0 ? `⭐ ${ratingNumber(c.rating).toFixed(1)}` : ""}
                     </span>
                   </div>
                   {c.description ? (
@@ -232,11 +278,11 @@ export default async function GuidePage({ params }: PageProps) {
             <p className="p">No related countries linked yet.</p>
           ) : (
             <div className="grid grid-2">
-              {relatedCountries.map((c: any) => (
-                <div key={c.code} className="card" style={{ background: "var(--panel)" }}>
+              {relatedCountries.map((c) => (
+                <div key={String(c.code)} className="card" style={{ background: "var(--panel)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                    <Link href={`/countries/${c.code}`}>{c.name}</Link>
-                    <span className="small">{c.code}</span>
+                    <Link href={`/countries/${String(c.code)}`}>{String(c.name)}</Link>
+                    <span className="small">{String(c.code)}</span>
                   </div>
                   {c.description ? (
                     <p className="small" style={{ marginTop: 8 }}>
@@ -262,8 +308,8 @@ export default async function GuidePage({ params }: PageProps) {
             </p>
           ) : (
             <div className="list">
-              {faq.map((qa, idx) => (
-                <div key={idx} className="card" style={{ background: "var(--panel)" }}>
+              {faq.map((qa) => (
+                <div key={qa.question} className="card" style={{ background: "var(--panel)" }}>
                   <div style={{ fontWeight: 800 }}>{qa.question}</div>
                   <p className="p" style={{ marginTop: 8 }}>
                     {qa.answer}

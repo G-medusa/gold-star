@@ -1,7 +1,9 @@
 // app/casinos/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+
 import { getCasinos } from "@/lib/casinos";
+import { jsonLd } from "@/lib/schema";
 
 const SITE_URL =
   (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
@@ -12,19 +14,27 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}/casinos` },
 };
 
+type CasinoLite = {
+  slug: string;
+  name: string;
+  rating?: unknown;
+  description?: unknown;
+  countries?: unknown;
+};
+
 function buildBreadcrumbJsonLd() {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Casinos", item: `${SITE_URL}/casinos` },
     ],
-  };
+  });
 }
 
 function buildItemListJsonLd(items: Array<{ name: string; url: string }>) {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "ItemList",
     itemListElement: items.map((it, idx) => ({
@@ -33,32 +43,38 @@ function buildItemListJsonLd(items: Array<{ name: string; url: string }>) {
       name: it.name,
       url: it.url,
     })),
-  };
+  });
+}
+
+function ratingNumber(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function formatRating(r: unknown) {
-  const n = typeof r === "number" ? r : Number(r);
-  if (Number.isFinite(n) && n > 0) return n.toFixed(1);
+  const n = ratingNumber(r);
+  if (n > 0) return n.toFixed(1);
   return null;
 }
 
 export default async function CasinosPage() {
-  const casinos = await getCasinos();
+  const casinosUnknown = (await getCasinos()) as unknown;
+  const casinos = Array.isArray(casinosUnknown) ? (casinosUnknown as CasinoLite[]) : [];
 
   // Sort: best rating first, then name
-  const sorted = [...casinos].sort((a: any, b: any) => {
-    const ar = Number(a?.rating) || 0;
-    const br = Number(b?.rating) || 0;
+  const sorted = [...casinos].sort((a, b) => {
+    const ar = ratingNumber(a.rating);
+    const br = ratingNumber(b.rating);
     if (br !== ar) return br - ar;
-    return String(a?.name ?? "").localeCompare(String(b?.name ?? ""));
+    return String(a.name ?? "").localeCompare(String(b.name ?? ""));
   });
 
   const breadcrumbLd = buildBreadcrumbJsonLd();
 
   const itemListLd = buildItemListJsonLd(
-    sorted.map((c: any) => ({
+    sorted.map((c) => ({
       name: String(c.name ?? c.slug ?? "Casino"),
-      url: `${SITE_URL}/casinos/${c.slug}`,
+      url: `${SITE_URL}/casinos/${String(c.slug)}`,
     }))
   );
 
@@ -95,21 +111,19 @@ export default async function CasinosPage() {
           </section>
         ) : (
           <section className="grid grid-2">
-            {sorted.map((c: any) => {
-              const rating = formatRating(c?.rating);
-              const countriesCount = Array.isArray(c?.countries) ? c.countries.length : 0;
+            {sorted.map((c) => {
+              const rating = formatRating(c.rating);
+              const countriesCount = Array.isArray(c.countries) ? c.countries.length : 0;
 
-              // Optional highlights if you later add fields:
-              // c.minDeposit, c.bonus, c.features (string[])
               const chips: string[] = [];
               if (countriesCount > 0) chips.push(`${countriesCount} countries`);
               if (rating) chips.push(`⭐ ${rating}`);
 
               return (
-                <article key={c.slug} className="card">
+                <article key={String(c.slug)} className="card">
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                     <h2 className="h2" style={{ margin: 0 }}>
-                      <Link href={`/casinos/${c.slug}`}>{c.name}</Link>
+                      <Link href={`/casinos/${String(c.slug)}`}>{String(c.name)}</Link>
                     </h2>
                     <span className="small">{rating ? `⭐ ${rating}` : ""}</span>
                   </div>
@@ -134,7 +148,7 @@ export default async function CasinosPage() {
                   <div className="hr" />
 
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                    <Link href={`/casinos/${c.slug}`}>Open review →</Link>
+                    <Link href={`/casinos/${String(c.slug)}`}>Open review →</Link>
                     {countriesCount > 0 ? (
                       <span className="small">Available in {countriesCount} region(s)</span>
                     ) : (

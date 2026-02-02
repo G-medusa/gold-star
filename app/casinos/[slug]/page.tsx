@@ -6,12 +6,33 @@ import Link from "next/link";
 import { getCasinoBySlug, getCasinos } from "@/lib/casinos";
 import { getCountries } from "@/lib/countries";
 import { getGuidesByCasinoSlug } from "@/lib/guides";
+import { jsonLd } from "@/lib/schema";
 
 const SITE_URL =
   (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
 
 type PageProps = {
   params: Promise<{ slug: string }>;
+};
+
+type CasinoLite = {
+  id: string;
+  slug: string;
+  name: string;
+  rating?: unknown;
+  description?: unknown;
+  countries?: unknown;
+};
+
+type CountryLite = {
+  code: string;
+  name: string;
+  description?: unknown;
+};
+
+type GuideLite = {
+  slug: string;
+  title: string;
 };
 
 function formatRating(r: unknown) {
@@ -21,7 +42,7 @@ function formatRating(r: unknown) {
 }
 
 function buildBreadcrumbJsonLd(casinoName: string, slug: string) {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
@@ -29,13 +50,14 @@ function buildBreadcrumbJsonLd(casinoName: string, slug: string) {
       { "@type": "ListItem", position: 2, name: "Casinos", item: `${SITE_URL}/casinos` },
       { "@type": "ListItem", position: 3, name: casinoName, item: `${SITE_URL}/casinos/${slug}` },
     ],
-  };
+  });
 }
 
 /* ------------------------- SSG ------------------------- */
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
-  const casinos = await getCasinos();
-  return casinos.map((c: any) => ({ slug: c.slug }));
+  const casinos = (await getCasinos()) as unknown;
+  const list = Array.isArray(casinos) ? (casinos as CasinoLite[]) : [];
+  return list.map((c) => ({ slug: String(c.slug) }));
 }
 
 /* ------------------------- SEO (OG dynamic) ------------------------- */
@@ -43,7 +65,7 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
-  const casino = await getCasinoBySlug(slug);
+  const casino = (await getCasinoBySlug(slug)) as unknown as CasinoLite | null;
 
   if (!casino) {
     return {
@@ -54,8 +76,9 @@ export async function generateMetadata(
 
   const title = `${casino.name} Review`;
   const description =
-    casino.description?.toString() ||
-    `Read our review of ${casino.name}: bonuses, features, and key details.`;
+    casino.description != null
+      ? String(casino.description)
+      : `Read our review of ${casino.name}: bonuses, features, and key details.`;
   const url = `/casinos/${casino.slug}`;
 
   const rating = typeof casino.rating === "number" ? casino.rating.toFixed(1) : "";
@@ -87,18 +110,28 @@ export async function generateMetadata(
 export default async function CasinoPage({ params }: PageProps) {
   const { slug } = await params;
 
-  const casino = await getCasinoBySlug(slug);
+  const casino = (await getCasinoBySlug(slug)) as unknown as CasinoLite | null;
   if (!casino) notFound();
 
   const rating = formatRating(casino.rating);
 
   // Countries lookup (optional)
-  const allCountries = await getCountries();
-  const countryCodes: string[] = Array.isArray(casino.countries) ? casino.countries : [];
-  const availableCountries = allCountries.filter((c: any) => countryCodes.includes(c.code));
+  const allCountriesUnknown = (await getCountries()) as unknown;
+  const allCountries = Array.isArray(allCountriesUnknown)
+    ? (allCountriesUnknown as CountryLite[])
+    : [];
 
-  // Related guides (you already built this)
-  const relatedGuides = await getGuidesByCasinoSlug(casino.slug);
+  const countryCodes: string[] = Array.isArray(casino.countries)
+    ? (casino.countries as unknown[]).map((x) => String(x))
+    : [];
+
+  const availableCountries = allCountries.filter((c) => countryCodes.includes(String(c.code)));
+
+  // Related guides
+  const relatedGuidesUnknown = (await getGuidesByCasinoSlug(String(casino.slug))) as unknown;
+  const relatedGuides = Array.isArray(relatedGuidesUnknown)
+    ? (relatedGuidesUnknown as GuideLite[])
+    : [];
 
   // Breadcrumb JSON-LD
   const breadcrumbLd = buildBreadcrumbJsonLd(String(casino.name), String(casino.slug));
@@ -177,13 +210,17 @@ export default async function CasinoPage({ params }: PageProps) {
             <p className="p">No countries linked yet for this casino.</p>
           ) : (
             <div className="grid grid-2">
-              {availableCountries.map((c: any) => (
+              {availableCountries.map((c) => (
                 <div key={c.code} className="card" style={{ background: "var(--panel)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
                     <Link href={`/countries/${c.code}`}>{c.name}</Link>
                     <span className="small">{c.code}</span>
                   </div>
-                  {c.description ? <p className="small" style={{ marginTop: 8 }}>{String(c.description)}</p> : null}
+                  {c.description ? (
+                    <p className="small" style={{ marginTop: 8 }}>
+                      {String(c.description)}
+                    </p>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -206,7 +243,7 @@ export default async function CasinoPage({ params }: PageProps) {
             <p className="p">No related guides yet.</p>
           ) : (
             <div className="list">
-              {relatedGuides.map((g: any) => (
+              {relatedGuides.map((g) => (
                 <div key={g.slug} className="item">
                   <Link href={`/guides/${g.slug}`}>{g.title}</Link>
                   <span className="small">guide</span>

@@ -6,12 +6,32 @@ import Link from "next/link";
 import { getCountryByCode, getCountries } from "@/lib/countries";
 import { getCasinos } from "@/lib/casinos";
 import { getGuidesByCountryCode } from "@/lib/guides";
+import { jsonLd } from "@/lib/schema";
 
 const SITE_URL =
   (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
 
 type PageProps = {
   params: Promise<{ code: string }>;
+};
+
+type CountryLite = {
+  code: string;
+  name: string;
+  description?: unknown;
+};
+
+type CasinoLite = {
+  slug: string;
+  name: string;
+  rating?: unknown;
+  description?: unknown;
+  countries?: unknown;
+};
+
+type GuideLite = {
+  slug: string;
+  title: string;
 };
 
 function codeToFlagEmoji(code: string) {
@@ -24,8 +44,13 @@ function codeToFlagEmoji(code: string) {
   return String.fromCodePoint(first, second);
 }
 
+function ratingNumber(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function buildBreadcrumbJsonLd(countryName: string, code: string) {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
@@ -33,13 +58,14 @@ function buildBreadcrumbJsonLd(countryName: string, code: string) {
       { "@type": "ListItem", position: 2, name: "Countries", item: `${SITE_URL}/countries` },
       { "@type": "ListItem", position: 3, name: countryName, item: `${SITE_URL}/countries/${code}` },
     ],
-  };
+  });
 }
 
 /* ------------------------- SSG ------------------------- */
 export async function generateStaticParams(): Promise<Array<{ code: string }>> {
-  const countries = await getCountries();
-  return countries.map((c: any) => ({ code: c.code }));
+  const countriesUnknown = (await getCountries()) as unknown;
+  const countries = Array.isArray(countriesUnknown) ? (countriesUnknown as CountryLite[]) : [];
+  return countries.map((c) => ({ code: String(c.code) }));
 }
 
 /* ------------------------- SEO (dynamic OG) ------------------------- */
@@ -47,7 +73,7 @@ export async function generateMetadata(
   { params }: { params: Promise<{ code: string }> }
 ): Promise<Metadata> {
   const { code } = await params;
-  const country = await getCountryByCode(code);
+  const country = (await getCountryByCode(code)) as unknown as CountryLite | null;
 
   if (!country) {
     return {
@@ -59,8 +85,9 @@ export async function generateMetadata(
   const flag = codeToFlagEmoji(String(country.code));
   const title = `Best Online Casinos in ${country.name}`;
   const description =
-    country.description?.toString() ||
-    `Top online casinos available in ${country.name}. Compare options, ratings, and guides.`;
+    country.description != null
+      ? String(country.description)
+      : `Top online casinos available in ${country.name}. Compare options, ratings, and guides.`;
   const url = `/countries/${country.code}`;
 
   const og = `/og?type=country&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(
@@ -91,17 +118,24 @@ export async function generateMetadata(
 export default async function CountryPage({ params }: PageProps) {
   const { code } = await params;
 
-  const country = await getCountryByCode(code);
+  const country = (await getCountryByCode(code)) as unknown as CountryLite | null;
   if (!country) notFound();
 
   const flag = codeToFlagEmoji(String(country.code));
 
-  const casinos = await getCasinos();
-  const available = casinos.filter((c: any) =>
-    Array.isArray(c.countries) ? c.countries.includes(country.code) : false
-  );
+  const casinosUnknown = (await getCasinos()) as unknown;
+  const casinos = Array.isArray(casinosUnknown) ? (casinosUnknown as CasinoLite[]) : [];
 
-  const relatedGuides = await getGuidesByCountryCode(country.code);
+  const codeNorm = String(country.code).toUpperCase();
+
+  const available = casinos.filter((c) => {
+    if (!Array.isArray(c.countries)) return false;
+    const list = (c.countries as unknown[]).map((x) => String(x).toUpperCase());
+    return list.includes(codeNorm);
+  });
+
+  const relatedGuidesUnknown = (await getGuidesByCountryCode(String(country.code))) as unknown;
+  const relatedGuides = Array.isArray(relatedGuidesUnknown) ? (relatedGuidesUnknown as GuideLite[]) : [];
 
   const breadcrumbLd = buildBreadcrumbJsonLd(String(country.name), String(country.code));
 
@@ -123,20 +157,20 @@ export default async function CountryPage({ params }: PageProps) {
               <Link className="navlink" href="/countries">
                 ← Back to countries
               </Link>
-              <span className="kbd">{country.code}</span>
+              <span className="kbd">{String(country.code)}</span>
               <span className="kbd">{available.length} casinos</span>
             </div>
           </div>
 
           <h1 className="h1" style={{ marginTop: 12 }}>
             {flag ? `${flag} ` : ""}
-            {country.name}
+            {String(country.name)}
           </h1>
 
           <p className="p" style={{ maxWidth: 900 }}>
             {country.description
               ? String(country.description)
-              : `This page lists online casinos available in ${country.name}, plus useful guides and internal links.`}
+              : `This page lists online casinos available in ${String(country.name)}, plus useful guides and internal links.`}
           </p>
         </section>
 
@@ -158,13 +192,13 @@ export default async function CountryPage({ params }: PageProps) {
             <div className="grid grid-2">
               {available
                 .slice()
-                .sort((a: any, b: any) => (Number(b.rating) || 0) - (Number(a.rating) || 0))
-                .map((c: any) => (
-                  <div key={c.slug} className="card" style={{ background: "var(--panel)" }}>
+                .sort((a, b) => ratingNumber(b.rating) - ratingNumber(a.rating))
+                .map((c) => (
+                  <div key={String(c.slug)} className="card" style={{ background: "var(--panel)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <Link href={`/casinos/${c.slug}`}>{c.name}</Link>
+                      <Link href={`/casinos/${String(c.slug)}`}>{String(c.name)}</Link>
                       <span className="small">
-                        {typeof c.rating === "number" ? `⭐ ${c.rating.toFixed(1)}` : ""}
+                        {ratingNumber(c.rating) > 0 ? `⭐ ${ratingNumber(c.rating).toFixed(1)}` : ""}
                       </span>
                     </div>
                     {c.description ? (
@@ -194,9 +228,9 @@ export default async function CountryPage({ params }: PageProps) {
             <p className="p">No related guides yet.</p>
           ) : (
             <div className="list">
-              {relatedGuides.map((g: any) => (
-                <div key={g.slug} className="item">
-                  <Link href={`/guides/${g.slug}`}>{g.title}</Link>
+              {relatedGuides.map((g) => (
+                <div key={String(g.slug)} className="item">
+                  <Link href={`/guides/${String(g.slug)}`}>{String(g.title)}</Link>
                   <span className="small">guide</span>
                 </div>
               ))}

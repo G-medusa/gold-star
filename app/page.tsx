@@ -5,19 +5,44 @@ import { getCasinos } from "@/lib/casinos";
 import { getCountries } from "@/lib/countries";
 import { getGuides } from "@/lib/guides";
 
+type CasinoLite = {
+  slug: string;
+  name: string;
+  rating?: unknown;
+};
+
+type CountryLite = {
+  code: string;
+  name: string;
+};
+
+type GuideLite = {
+  slug: string;
+  title: string;
+};
+
 function topBy<T>(arr: T[], take: number) {
   return arr.slice(0, Math.max(0, take));
 }
 
+function ratingNumber(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export default async function HomePage() {
-  const [casinos, countries, guides] = await Promise.all([
+  const [casinosUnknown, countriesUnknown, guidesUnknown] = await Promise.all([
     getCasinos(),
     getCountries(),
     getGuides(),
   ]);
 
+  const casinos = Array.isArray(casinosUnknown) ? (casinosUnknown as CasinoLite[]) : [];
+  const countries = Array.isArray(countriesUnknown) ? (countriesUnknown as CountryLite[]) : [];
+  const guides = Array.isArray(guidesUnknown) ? (guidesUnknown as GuideLite[]) : [];
+
   const topCasinos = topBy(
-    [...casinos].sort((a: any, b: any) => (Number(b.rating) || 0) - (Number(a.rating) || 0)),
+    [...casinos].sort((a, b) => ratingNumber(b.rating) - ratingNumber(a.rating)),
     6
   );
 
@@ -109,10 +134,12 @@ export default async function HomePage() {
             <p className="p">No casinos yet.</p>
           ) : (
             <div className="list" style={{ marginTop: 10 }}>
-              {topCasinos.map((c: any) => (
+              {topCasinos.map((c) => (
                 <div key={c.slug} className="item">
                   <Link href={`/casinos/${c.slug}`}>{c.name}</Link>
-                  <span className="small">{typeof c.rating === "number" ? `⭐ ${c.rating}` : ""}</span>
+                  <span className="small">
+                    {ratingNumber(c.rating) > 0 ? `⭐ ${ratingNumber(c.rating).toFixed(1)}` : ""}
+                  </span>
                 </div>
               ))}
             </div>
@@ -131,7 +158,7 @@ export default async function HomePage() {
             <p className="p">No countries yet.</p>
           ) : (
             <div className="list" style={{ marginTop: 10 }}>
-              {popularCountries.map((c: any) => (
+              {popularCountries.map((c) => (
                 <div key={c.code} className="item">
                   <Link href={`/countries/${c.code}`}>{c.name}</Link>
                   <span className="small">{c.code}</span>
@@ -153,7 +180,7 @@ export default async function HomePage() {
             <p className="p">No guides yet.</p>
           ) : (
             <div className="list" style={{ marginTop: 10 }}>
-              {latestGuides.map((g: any) => (
+              {latestGuides.map((g) => (
                 <div key={g.slug} className="item">
                   <Link href={`/guides/${g.slug}`}>{g.title}</Link>
                   <span className="small">guide</span>
@@ -170,7 +197,9 @@ export default async function HomePage() {
             linking across all sections.
           </p>
           <div className="hr" />
-          <p className="small">Next file: <b>app/casinos/page.tsx</b> (cards + sorting + clean layout)</p>
+          <p className="small">
+            Next file: <b>app/casinos/page.tsx</b> (cards + sorting + clean layout)
+          </p>
         </div>
       </section>
     </div>

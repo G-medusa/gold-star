@@ -1,7 +1,9 @@
 // app/countries/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+
 import { getCountries } from "@/lib/countries";
+import { jsonLd } from "@/lib/schema";
 
 const SITE_URL =
   (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
@@ -12,19 +14,25 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}/countries` },
 };
 
+type CountryLite = {
+  code: string;
+  name: string;
+  description?: unknown;
+};
+
 function buildBreadcrumbJsonLd() {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Countries", item: `${SITE_URL}/countries` },
     ],
-  };
+  });
 }
 
 function buildItemListJsonLd(items: Array<{ name: string; url: string }>) {
-  return {
+  return jsonLd({
     "@context": "https://schema.org",
     "@type": "ItemList",
     itemListElement: items.map((it, idx) => ({
@@ -33,7 +41,7 @@ function buildItemListJsonLd(items: Array<{ name: string; url: string }>) {
       name: it.name,
       url: it.url,
     })),
-  };
+  });
 }
 
 function codeToFlagEmoji(code: string) {
@@ -47,19 +55,20 @@ function codeToFlagEmoji(code: string) {
 }
 
 export default async function CountriesPage() {
-  const countries = await getCountries();
+  const countriesUnknown = (await getCountries()) as unknown;
+  const countries = Array.isArray(countriesUnknown) ? (countriesUnknown as CountryLite[]) : [];
 
   // Sort by name
-  const sorted = [...countries].sort((a: any, b: any) =>
-    String(a?.name ?? "").localeCompare(String(b?.name ?? ""))
+  const sorted = [...countries].sort((a, b) =>
+    String(a.name ?? "").localeCompare(String(b.name ?? ""))
   );
 
   const breadcrumbLd = buildBreadcrumbJsonLd();
 
   const itemListLd = buildItemListJsonLd(
-    sorted.map((c: any) => ({
+    sorted.map((c) => ({
       name: String(c.name ?? c.code ?? "Country"),
-      url: `${SITE_URL}/countries/${c.code}`,
+      url: `${SITE_URL}/countries/${String(c.code)}`,
     }))
   );
 
@@ -95,7 +104,7 @@ export default async function CountriesPage() {
           </section>
         ) : (
           <section className="grid grid-2">
-            {sorted.map((c: any) => {
+            {sorted.map((c) => {
               const flag = codeToFlagEmoji(String(c.code ?? ""));
               const name = String(c.name ?? "Country");
               const code = String(c.code ?? "");
