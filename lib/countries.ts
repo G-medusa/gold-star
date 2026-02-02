@@ -1,5 +1,4 @@
-// lib/countries.ts
-import rawCountries from "@/data/countries.json";
+import countriesJson from "@/data/countries.json";
 
 export type Country = {
   code: string;
@@ -7,55 +6,30 @@ export type Country = {
   description?: string;
 };
 
-function normalizeCountry(input: any): Country | null {
-  // поддержим разные возможные ключи из json
-  const code =
-    typeof input?.code === "string"
-      ? input.code
-      : typeof input?.iso2 === "string"
-        ? input.iso2
-        : typeof input?.countryCode === "string"
-          ? input.countryCode
-          : null;
+function toCountry(x: unknown): Country | null {
+  if (!x || typeof x !== "object") return null;
+  const o = x as Record<string, unknown>;
+  const code = o.code;
+  const name = o.name;
 
-  const name =
-    typeof input?.name === "string"
-      ? input.name
-      : typeof input?.title === "string"
-        ? input.title
-        : null;
+  if (typeof code !== "string" || typeof name !== "string") return null;
 
-  if (!code || !name) return null;
-
-  const description = typeof input?.description === "string" ? input.description : undefined;
-
-  return { code, name, description };
+  const description = o.description;
+  return {
+    code,
+    name,
+    ...(typeof description === "string" ? { description } : {}),
+  };
 }
 
 export async function getCountries(): Promise<Country[]> {
-  const list = Array.isArray(rawCountries) ? rawCountries : [];
-  const normalized = list.map(normalizeCountry).filter(Boolean) as Country[];
-
-  // на всякий случай уберём дубликаты по code (частая проблема в json)
-  const map = new Map<string, Country>();
-  for (const c of normalized) {
-    const key = c.code.toLowerCase();
-    if (!map.has(key)) map.set(key, c);
-  }
-  return Array.from(map.values());
+  const raw = countriesJson as unknown;
+  if (!Array.isArray(raw)) return [];
+  return raw.map(toCountry).filter((c): c is Country => c !== null);
 }
 
-export async function getAllCountryCodes(): Promise<string[]> {
-  const countries = await getCountries();
-  return countries.map((c) => c.code);
-}
-
-export async function getCountryByCode(
-  code: string | undefined | null
-): Promise<Country | null> {
-  if (!code) return null;
+export async function getCountryByCode(code: string): Promise<Country | null> {
   const normalized = code.toLowerCase();
-
   const countries = await getCountries();
   return countries.find((c) => c.code.toLowerCase() === normalized) ?? null;
 }
