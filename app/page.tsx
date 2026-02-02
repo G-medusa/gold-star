@@ -50,158 +50,162 @@ export default async function HomePage() {
   const latestGuides = topBy([...guides], 6);
 
   return (
-    <div className="grid" style={{ gap: 18 }}>
-      {/* HERO */}
-      <section className="card" style={{ padding: 22 }}>
-        <div className="grid" style={{ gap: 10 }}>
-          <div className="badge">⭐ Gold Star</div>
+    <main className="grid" style={{ gap: 22 }}>
+      {/* HERO / INTRO */}
+      <section className="card" style={{ padding: 24 }}>
+        <header className="grid" style={{ gap: 12, maxWidth: 900 }}>
+          <span className="badge">⭐ Gold Star</span>
 
-          <h1 className="h1">Casino reviews, countries & guides — clean and fast.</h1>
+          <h1 className="h1">
+            Casino reviews, country availability and practical gambling guides
+          </h1>
 
-          <p className="p" style={{ maxWidth: 820 }}>
-            We help players compare casinos, understand regional availability, and learn with practical
-            guides. Built for speed, clarity, and SEO.
+          <p className="p">
+            Gold Star is an editorial casino guide built to help players compare online casinos,
+            understand regional availability, and make informed decisions. We focus on clear reviews,
+            transparent criteria, and structured content — from casino brands and bonuses to payments,
+            mobile experience, and country specific rules.
           </p>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
+          <nav style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
             <Link className="navlink" href="/casinos">
               Browse casinos
             </Link>
             <Link className="navlink" href="/countries">
-              Explore countries
+              Casinos by country
             </Link>
             <Link className="navlink" href="/guides">
               Read guides
             </Link>
-
-            <span className="kbd">SSG</span>
-            <span className="kbd">Schema.org</span>
-            <span className="kbd">OG images</span>
-          </div>
-        </div>
+          </nav>
+        </header>
       </section>
 
-      {/* 3 CARDS */}
+      {/* CORE SECTIONS */}
       <section className="grid grid-2">
-        <div className="card">
-          <h2 className="h2">Casinos</h2>
+        <article className="card">
+          <h2 className="h2">Casino Reviews</h2>
           <p className="p">
-            Reviews with ratings, features, and structured data (FAQ/Review/Breadcrumbs).
+            Our casino reviews focus on practical details: bonuses and wagering terms, supported payment
+            methods, withdrawal speed, mobile usability, and overall reliability. Each brand is reviewed
+            using the same criteria to keep comparisons fair and transparent.
           </p>
           <div className="hr" />
-          <Link href="/casinos">Go to казино-листинг →</Link>
-        </div>
+          <Link href="/casinos">View all casino reviews →</Link>
+        </article>
 
-        <div className="card">
-          <h2 className="h2">Countries</h2>
+        <article className="card">
+          <h2 className="h2">Casinos by Country</h2>
           <p className="p">
-            Country pages show which casinos are available + guides for the region.
+            Availability and rules differ by region. On our country pages you’ll find which casinos are
+            accessible, what payment methods are commonly used, and what players should know before
+            signing up in a specific location.
           </p>
           <div className="hr" />
-          <Link href="/countries">Go to страны →</Link>
-        </div>
+          <Link href="/countries">Explore countries →</Link>
+        </article>
 
-        <div className="card">
-          <h2 className="h2">Guides</h2>
+        <article className="card">
+          <h2 className="h2">Guides & How Tos</h2>
           <p className="p">
-            Educational content with FAQ schema + internal linking to casinos and countries.
+            Our guides explain common topics like bonuses, withdrawals, verification, and mobile play.
+            They are written to answer real player questions and link back to relevant casinos and
+            country pages where it makes sense.
           </p>
           <div className="hr" />
-          <Link href="/guides">Go to guides →</Link>
-        </div>
+          <Link href="/guides">Read all guides →</Link>
+        </article>
 
-        <div className="card">
-          <h2 className="h2">Built for SEO</h2>
-          <p className="p">
-            ItemList + BreadcrumbList, sitemap.xml, robots.txt, and dynamic OG images.
-          </p>
-          <div className="hr" />
-          <p className="small">Next step: polishing detail pages and list cards.</p>
-        </div>
+        <article className="card">
+          <h2 className="h2">How we evaluate casinos</h2>
+          <ul className="p">
+            <li>Clarity of bonus terms and wagering requirements</li>
+            <li>Supported payment methods and withdrawal speed</li>
+            <li>Mobile experience and usability</li>
+            <li>Verification requirements and limits</li>
+            <li>General reputation and user feedback</li>
+          </ul>
+        </article>
       </section>
 
-      {/* FEATURED */}
+      {/* FEATURED CONTENT */}
       <section className="grid grid-2">
-        <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Top Casinos</h2>
+        <article className="card">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2">Top rated casinos</h2>
             <Link href="/casinos" className="small">
               all →
             </Link>
-          </div>
+          </header>
 
           {topCasinos.length === 0 ? (
-            <p className="p">No casinos yet.</p>
+            <p className="p">Casino reviews will appear here soon.</p>
           ) : (
-            <div className="list" style={{ marginTop: 10 }}>
+            <ul className="list" style={{ marginTop: 12 }}>
               {topCasinos.map((c) => (
-                <div key={c.slug} className="item">
+                <li key={c.slug} className="item">
                   <Link href={`/casinos/${c.slug}`}>{c.name}</Link>
-                  <span className="small">
-                    {ratingNumber(c.rating) > 0 ? `⭐ ${ratingNumber(c.rating).toFixed(1)}` : ""}
-                  </span>
-                </div>
+                  {ratingNumber(c.rating) > 0 && (
+                    <span className="small">⭐ {ratingNumber(c.rating).toFixed(1)}</span>
+                  )}
+                </li>
               ))}
-            </div>
+            </ul>
           )}
-        </div>
+        </article>
 
-        <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Popular Countries</h2>
+        <article className="card">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2">Popular countries</h2>
             <Link href="/countries" className="small">
               all →
             </Link>
-          </div>
+          </header>
 
           {popularCountries.length === 0 ? (
-            <p className="p">No countries yet.</p>
+            <p className="p">Country pages will appear here soon.</p>
           ) : (
-            <div className="list" style={{ marginTop: 10 }}>
+            <ul className="list" style={{ marginTop: 12 }}>
               {popularCountries.map((c) => (
-                <div key={c.code} className="item">
+                <li key={c.code} className="item">
                   <Link href={`/countries/${c.code}`}>{c.name}</Link>
                   <span className="small">{c.code}</span>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
-        </div>
+        </article>
 
-        <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Latest Guides</h2>
+        <article className="card">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2">Latest guides</h2>
             <Link href="/guides" className="small">
               all →
             </Link>
-          </div>
+          </header>
 
           {latestGuides.length === 0 ? (
-            <p className="p">No guides yet.</p>
+            <p className="p">Guides are being prepared.</p>
           ) : (
-            <div className="list" style={{ marginTop: 10 }}>
+            <ul className="list" style={{ marginTop: 12 }}>
               {latestGuides.map((g) => (
-                <div key={g.slug} className="item">
+                <li key={g.slug} className="item">
                   <Link href={`/guides/${g.slug}`}>{g.title}</Link>
                   <span className="small">guide</span>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
-        </div>
+        </article>
 
-        <div className="card">
-          <h2 className="h2">Next on the roadmap</h2>
+        <article className="card">
+          <h2 className="h2">Responsible play</h2>
           <p className="p">
-            We’ll polish list cards, add consistent hero sections on detail pages, and tighten internal
-            linking across all sections.
+            Online gambling is a form of entertainment, not a guaranteed way to earn money. Always play
+            responsibly, understand the rules of each casino, and seek help if gambling stops being fun.
           </p>
-          <div className="hr" />
-          <p className="small">
-            Next file: <b>app/casinos/page.tsx</b> (cards + sorting + clean layout)
-          </p>
-        </div>
+        </article>
       </section>
-    </div>
+    </main>
   );
 }
