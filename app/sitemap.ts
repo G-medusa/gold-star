@@ -5,8 +5,11 @@ import { getCasinos } from "@/lib/casinos";
 import { getCountries } from "@/lib/countries";
 import { getGuides } from "@/lib/guides";
 
-const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
+const SITE_URL = (
+  process.env.SITE_URL ??
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  "https://gold-star-ten.vercel.app"
+).replace(/\/$/, "");
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [casinos, countries, guides] = await Promise.all([
