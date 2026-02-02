@@ -50,21 +50,27 @@ export default async function HomePage() {
   const latestGuides = topBy([...guides], 6);
 
   return (
-    <main className="grid" style={{ gap: 22 }}>
-      {/* HERO / INTRO */}
+    <main className="grid" style={{ gap: 24 }}>
+      {/* HERO */}
       <section className="card" style={{ padding: 24 }}>
-        <header className="grid" style={{ gap: 12, maxWidth: 900 }}>
+        <header className="grid" style={{ gap: 14, maxWidth: 960 }}>
           <span className="badge">⭐ Gold Star</span>
 
-          <h1 className="h1">
+          <h1 className="h1" style={{ margin: 0 }}>
             Casino reviews, country availability and practical gambling guides
           </h1>
 
+          <p className="p" style={{ margin: 0 }}>
+            Gold Star is an editorial casino guide designed to help players navigate online casinos with
+            clarity and realistic expectations. We publish structured casino reviews, country specific
+            availability pages, and practical guides that explain how things actually work — from bonuses
+            and payments to withdrawals, verification, and mobile play.
+          </p>
+
           <p className="p">
-            Gold Star is an editorial casino guide built to help players compare online casinos,
-            understand regional availability, and make informed decisions. We focus on clear reviews,
-            transparent criteria, and structured content — from casino brands and bonuses to payments,
-            mobile experience, and country specific rules.
+            Instead of promotional language, we focus on practical details that affect real usage.
+            If you are choosing a casino for a specific reason — faster withdrawals, mobile convenience,
+            or availability in your country — the sections below are a good starting point.
           </p>
 
           <nav style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
@@ -81,62 +87,100 @@ export default async function HomePage() {
         </header>
       </section>
 
-      {/* CORE SECTIONS */}
+      {/* STRUCTURE */}
       <section className="grid grid-2">
         <article className="card">
-          <h2 className="h2">Casino Reviews</h2>
+          <h2 className="h2">How this site is structured</h2>
           <p className="p">
-            Our casino reviews focus on practical details: bonuses and wagering terms, supported payment
-            methods, withdrawal speed, mobile usability, and overall reliability. Each brand is reviewed
-            using the same criteria to keep comparisons fair and transparent.
+            Gold Star is split into three main sections. The{" "}
+            <Link href="/casinos">casino catalog</Link> contains brand reviews with a consistent layout,
+            making it easier to compare casinos side by side. The{" "}
+            <Link href="/countries">country section</Link> explains where casinos are available and what
+            regional factors matter in practice. The{" "}
+            <Link href="/guides">guides library</Link> answers common questions and links back to relevant
+            casinos and countries.
           </p>
-          <div className="hr" />
-          <Link href="/casinos">View all casino reviews →</Link>
-        </article>
-
-        <article className="card">
-          <h2 className="h2">Casinos by Country</h2>
           <p className="p">
-            Availability and rules differ by region. On our country pages you’ll find which casinos are
-            accessible, what payment methods are commonly used, and what players should know before
-            signing up in a specific location.
+            This structure allows you to move from a general question to a specific answer without jumping
+            between unrelated pages or marketing heavy lists.
           </p>
-          <div className="hr" />
-          <Link href="/countries">Explore countries →</Link>
-        </article>
-
-        <article className="card">
-          <h2 className="h2">Guides & How Tos</h2>
-          <p className="p">
-            Our guides explain common topics like bonuses, withdrawals, verification, and mobile play.
-            They are written to answer real player questions and link back to relevant casinos and
-            country pages where it makes sense.
-          </p>
-          <div className="hr" />
-          <Link href="/guides">Read all guides →</Link>
         </article>
 
         <article className="card">
           <h2 className="h2">How we evaluate casinos</h2>
           <ul className="p">
-            <li>Clarity of bonus terms and wagering requirements</li>
-            <li>Supported payment methods and withdrawal speed</li>
-            <li>Mobile experience and usability</li>
-            <li>Verification requirements and limits</li>
-            <li>General reputation and user feedback</li>
+            <li>
+              <b>Bonus clarity:</b> wagering requirements, restrictions, and how easy the terms are to verify
+            </li>
+            <li>
+              <b>Payments:</b> supported methods, typical withdrawal times, and common limitations
+            </li>
+            <li>
+              <b>Mobile experience:</b> usability on phones, performance, and feature availability
+            </li>
+            <li>
+              <b>Account rules:</b> verification (KYC), limits, and support responsiveness
+            </li>
+            <li>
+              <b>Reliability signals:</b> recurring user issues and reputation indicators when available
+            </li>
           </ul>
+          <p className="small">
+            Ratings summarize the overall experience using the same checklist — they are not marketing scores.
+          </p>
         </article>
       </section>
 
-      {/* FEATURED CONTENT */}
+      {/* WHY CHOICE MATTERS */}
+      <section className="card">
+        <h2 className="h2">Why choosing the right casino actually matters</h2>
+        <p className="p">
+          Online casinos are not interchangeable. Some prioritize large bonuses with strict wagering
+          requirements, others focus on simpler payments and faster withdrawals, while some are optimized
+          mainly for mobile play. Choosing a casino that fits your preferences can significantly affect
+          how smooth or frustrating the experience feels.
+        </p>
+        <p className="p">
+          A casino that works well for casual slot play may be a poor choice if fast access to winnings
+          is important. Likewise, a platform with a huge game catalog but confusing navigation may feel
+          overwhelming, even if the bonuses look attractive. Our reviews are structured to help you answer
+          a simple question first: does this casino fit how I want to play?
+        </p>
+      </section>
+
+      {/* GAMES */}
+      <section className="card">
+        <h2 className="h2">Game variety and player preferences</h2>
+        <p className="p">
+          Game selection is another area where “best casino” means different things to different players.
+          Some platforms focus heavily on slots with thousands of titles and varied volatility levels.
+          Others emphasize table games or live dealer sections that aim to replicate a land based casino
+          experience.
+        </p>
+        <p className="p">
+          This variety matters because engagement depends on personal preference. A smaller but well curated
+          selection can feel more enjoyable than a massive catalog with poor filtering. Our casino reviews
+          highlight the type of games each platform leans toward, so you can quickly decide whether it aligns
+          with what you actually enjoy playing.
+        </p>
+      </section>
+
+      {/* FEATURED */}
       <section className="grid grid-2">
         <article className="card">
-          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Top rated casinos</h2>
-            <Link href="/casinos" className="small">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+            <h2 className="h2" style={{ margin: 0 }}>
+              Top casinos
+            </h2>
+            <Link className="small" href="/casinos">
               all →
             </Link>
           </header>
+
+          <p className="p">
+            These casino reviews are a good entry point if you already have a brand in mind or want to see
+            how different platforms compare using the same criteria.
+          </p>
 
           {topCasinos.length === 0 ? (
             <p className="p">Casino reviews will appear here soon.</p>
@@ -155,12 +199,19 @@ export default async function HomePage() {
         </article>
 
         <article className="card">
-          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Popular countries</h2>
-            <Link href="/countries" className="small">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+            <h2 className="h2" style={{ margin: 0 }}>
+              Popular countries
+            </h2>
+            <Link className="small" href="/countries">
               all →
             </Link>
           </header>
+
+          <p className="p">
+            Country pages explain practical availability and regional nuances such as common payment
+            methods, verification expectations, and typical bonus considerations.
+          </p>
 
           {popularCountries.length === 0 ? (
             <p className="p">Country pages will appear here soon.</p>
@@ -175,14 +226,24 @@ export default async function HomePage() {
             </ul>
           )}
         </article>
+      </section>
 
+      {/* GUIDES + RESPONSIBLE */}
+      <section className="grid grid-2">
         <article className="card">
-          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Latest guides</h2>
-            <Link href="/guides" className="small">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+            <h2 className="h2" style={{ margin: 0 }}>
+              Latest guides
+            </h2>
+            <Link className="small" href="/guides">
               all →
             </Link>
           </header>
+
+          <p className="p">
+            Guides are written to answer practical questions players ask most often: how withdrawals work,
+            what verification involves, how bonus wagering is calculated, and what to expect on mobile.
+          </p>
 
           {latestGuides.length === 0 ? (
             <p className="p">Guides are being prepared.</p>
@@ -201,8 +262,9 @@ export default async function HomePage() {
         <article className="card">
           <h2 className="h2">Responsible play</h2>
           <p className="p">
-            Online gambling is a form of entertainment, not a guaranteed way to earn money. Always play
-            responsibly, understand the rules of each casino, and seek help if gambling stops being fun.
+            Online gambling should be treated as entertainment, not a guaranteed way to earn money.
+            Always read the rules, understand bonus restrictions, and set personal limits. If gambling
+            stops being fun, consider seeking help through local support services.
           </p>
         </article>
       </section>

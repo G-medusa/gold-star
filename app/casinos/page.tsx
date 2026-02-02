@@ -134,6 +134,138 @@ export default async function CasinosPage() {
         </ul>
       </section>
 
+      {/* Choosing a casino that fits you */}
+      <section className="card">
+        <h2 className="h2">How to choose a casino that fits you</h2>
+        <p className="p">
+          “Best casino” depends on what you value. Some players want the simplest withdrawals, others care
+          most about mobile usability, and some focus on game variety or live dealer quality. Picking a casino
+          that matches your habits usually matters more than chasing the biggest bonus headline.
+        </p>
+        <ul className="p">
+          <li>
+            <b>If you withdraw often:</b> prioritize withdrawal methods, typical processing times, and the
+            verification flow.
+          </li>
+          <li>
+            <b>If you play mostly on mobile:</b> prioritize speed, navigation, and whether key features are usable
+            on a phone.
+          </li>
+          <li>
+            <b>If you care about specific games:</b> check whether the catalog leans toward slots, table games,
+            or live casino.
+          </li>
+          <li>
+            <b>If you use a specific payment method:</b> shortlist casinos that support it reliably (and read any
+            related limits).
+          </li>
+        </ul>
+        <p className="small">
+          Tip: If your first constraint is location, start with <Link href="/countries">casinos by country</Link>.
+        </p>
+      </section>
+
+      {/* Game variety overview */}
+      <section className="card">
+        <h2 className="h2">Game variety: slots, table games and live casino</h2>
+        <p className="p">
+          Casinos differ in how they build their game selection. Slot heavy platforms often offer thousands of
+          titles with different volatility levels and mechanics. Table game oriented casinos focus on blackjack,
+          roulette, and poker variants. Live casino sections aim to replicate a real casino atmosphere with streamed
+          dealers.
+        </p>
+        <p className="p">
+          This matters because “more games” is not always better. A smaller but well organized catalog can feel more
+          enjoyable than a huge library with weak filters and slow loading. In our reviews, we highlight what a casino
+          leans toward so you can choose based on preference, not hype.
+        </p>
+      </section>
+
+      {/* Practical checklist before signup */}
+      <section className="card">
+        <h2 className="h2">A quick checklist before you sign up</h2>
+        <p className="p">
+          Before registering, it helps to check a few practical details that often cause frustration later. This takes
+          a minute and can save you from surprises during withdrawal.
+        </p>
+        <ul className="p">
+          <li>
+            <b>Bonus terms:</b> wagering requirements, excluded games, and whether the offer applies to your region.
+          </li>
+          <li>
+            <b>Withdrawals:</b> typical processing time, minimum/maximum limits, and whether fees apply.
+          </li>
+          <li>
+            <b>Verification (KYC):</b> prepare documents early if you want fewer payout delays.
+          </li>
+          <li>
+            <b>Support:</b> check if live chat/email exists and whether response times are reasonable.
+          </li>
+        </ul>
+        <p className="small">
+          For deeper explanations, see <Link href="/guides">our guides</Link> (withdrawals, bonuses, and verification).
+        </p>
+      </section>
+{/* Payment methods and flexibility */}
+<section className="card">
+  <h2 className="h2">Payment methods and flexibility</h2>
+  <p className="p">
+    Payment options are one of the most practical differences between casinos. While most platforms support
+    basic methods like cards or e-wallets, the real experience depends on how flexible and transparent those
+    options are in practice — especially when it comes to withdrawals.
+  </p>
+  <p className="p">
+    Some casinos focus on traditional banking methods, others prioritize e-wallets or newer alternatives.
+    For players, the important part is not just availability, but how smoothly deposits and payouts are
+    processed, whether fees apply, and what limits exist for different methods.
+  </p>
+  <ul className="p">
+    <li>
+      <b>Consistency:</b> using the same method for deposits and withdrawals often reduces delays.
+    </li>
+    <li>
+      <b>Withdrawal reality:</b> “instant” withdrawals usually apply after verification and within set limits.
+    </li>
+    <li>
+      <b>Regional differences:</b> payment availability and processing times can vary significantly by country.
+    </li>
+  </ul>
+  <p className="small">
+    If payments are your main concern, combine casino reviews with{" "}
+    <Link href="/countries">country pages</Link> to see what typically works best in your region.
+  </p>
+</section>
+
+{/* Promotions and ongoing offers */}
+<section className="card">
+  <h2 className="h2">Promotions, bonuses and player competitions</h2>
+  <p className="p">
+    Promotions are not limited to welcome bonuses. Many casinos offer ongoing incentives such as reload
+    bonuses, free spins, cashback programs, loyalty rewards, or time limited competitions. These can add
+    value, but only if the conditions match how you actually play.
+  </p>
+  <p className="p">
+    Large headline bonuses often come with higher wagering requirements, while smaller recurring offers
+    may be easier to use over time. Competitions and leaderboards can appeal to frequent players, but they
+    usually reward volume rather than casual play.
+  </p>
+  <ul className="p">
+    <li>
+      <b>Welcome bonuses:</b> good for testing a casino, but always check wagering and exclusions.
+    </li>
+    <li>
+      <b>Reload & cashback:</b> often more relevant for regular players than one time offers.
+    </li>
+    <li>
+      <b>Tournaments & competitions:</b> can add excitement, but favor high activity levels.
+    </li>
+  </ul>
+  <p className="small">
+    In our reviews, promotions are explained in context — not as promises, but as optional extras with
+    clear conditions.
+  </p>
+</section>
+
       {/* Catalog */}
       {sorted.length === 0 ? (
         <section className="card">
