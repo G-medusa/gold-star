@@ -5,8 +5,9 @@ import Link from "next/link";
 import { getGuides } from "@/lib/guides";
 import { jsonLd } from "@/lib/schema";
 
-const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
+).replace(/\/$/, "");
 
 export const metadata: Metadata = {
   title: "Guides",
@@ -50,7 +51,6 @@ export default async function GuidesPage() {
   const guidesUnknown = (await getGuides()) as unknown;
   const guides = Array.isArray(guidesUnknown) ? (guidesUnknown as GuideLite[]) : [];
 
-  // Sort by title (if you later add dates, we can sort by date desc)
   const sorted = [...guides].sort((a, b) =>
     String(a.title ?? "").localeCompare(String(b.title ?? ""))
   );
@@ -77,10 +77,10 @@ export default async function GuidesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
       />
 
-      <div className="grid" style={{ gap: 18 }}>
-        {/* Header */}
-        <section className="card" style={{ padding: 22 }}>
-          <div className="badge">⭐ Gold Star</div>
+      <article className="grid" style={{ gap: 18 }}>
+        {/* HEADER */}
+        <header className="card" style={{ padding: 22 }}>
+          <p className="badge">⭐ Gold Star</p>
           <h1 className="h1" style={{ marginTop: 10 }}>
             Guides
           </h1>
@@ -88,51 +88,66 @@ export default async function GuidesPage() {
             Practical guides about choosing casinos, payments, bonuses, and responsible play. Each guide
             links to related casinos and countries.
           </p>
-        </section>
+        </header>
 
-        {/* Grid */}
+        {/* LIST */}
         {sorted.length === 0 ? (
           <section className="card">
             <p className="p">No guides yet.</p>
           </section>
         ) : (
-          <section className="grid grid-2">
-            {sorted.map((g) => {
-              const title = String(g.title ?? "Guide");
-              const desc = g.description
-                ? String(g.description)
-                : "Step-by-step guide with practical tips and internal links.";
+          <section aria-labelledby="guides-list">
+            <h2 id="guides-list" className="sr-only">
+              Guides list
+            </h2>
 
-              const casinosCount = Array.isArray(g.relatedCasinos) ? g.relatedCasinos.length : 0;
-              const countriesCount = Array.isArray(g.relatedCountries) ? g.relatedCountries.length : 0;
+            <ul className="grid grid-2">
+              {sorted.map((g) => {
+                const title = String(g.title ?? "Guide");
+                const desc = g.description
+                  ? String(g.description)
+                  : "Step-by-step guide with practical tips and internal links.";
 
-              return (
-                <article key={String(g.slug)} className="card">
-                  <h2 className="h2" style={{ margin: 0 }}>
-                    <Link href={`/guides/${String(g.slug)}`}>{title}</Link>
-                  </h2>
+                const casinosCount = Array.isArray(g.relatedCasinos) ? g.relatedCasinos.length : 0;
+                const countriesCount = Array.isArray(g.relatedCountries) ? g.relatedCountries.length : 0;
 
-                  <p className="p">{desc}</p>
+                return (
+                  <li key={String(g.slug)}>
+                    <article className="card">
+                      <h3 className="h2" style={{ margin: 0 }}>
+                        <Link href={`/guides/${String(g.slug)}`}>{title}</Link>
+                      </h3>
 
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-                    <span className="kbd">guide</span>
-                    <span className="kbd">faq</span>
-                    {casinosCount > 0 ? <span className="kbd">{casinosCount} casinos</span> : null}
-                    {countriesCount > 0 ? <span className="kbd">{countriesCount} countries</span> : null}
-                  </div>
+                      <p className="p">{desc}</p>
 
-                  <div className="hr" />
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+                        <span className="kbd">guide</span>
+                        <span className="kbd">faq</span>
+                        {casinosCount > 0 ? <span className="kbd">{casinosCount} casinos</span> : null}
+                        {countriesCount > 0 ? <span className="kbd">{countriesCount} countries</span> : null}
+                      </div>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                    <Link href={`/guides/${String(g.slug)}`}>Read guide →</Link>
-                    <span className="small">Internal linking ready</span>
-                  </div>
-                </article>
-              );
-            })}
+                      <div className="hr" />
+
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 12,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Link href={`/guides/${String(g.slug)}`}>Read guide →</Link>
+                        <span className="small">Internal linking ready</span>
+                      </div>
+                    </article>
+                  </li>
+                );
+              })}
+            </ul>
           </section>
         )}
-      </div>
+      </article>
     </>
   );
 }

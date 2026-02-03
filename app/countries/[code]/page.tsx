@@ -8,8 +8,9 @@ import { getCasinos } from "@/lib/casinos";
 import { getGuidesByCountryCode } from "@/lib/guides";
 import { jsonLd } from "@/lib/schema";
 
-const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
+).replace(/\/$/, "");
 
 type PageProps = {
   params: Promise<{ code: string }>;
@@ -82,34 +83,41 @@ export async function generateMetadata(
     };
   }
 
-  const flag = codeToFlagEmoji(String(country.code));
+  const cc = String(country.code);
+  const flag = codeToFlagEmoji(cc);
+
   const title = `Best Online Casinos in ${country.name}`;
   const description =
     country.description != null
       ? String(country.description)
       : `Top online casinos available in ${country.name}. Compare options, ratings, and guides.`;
-  const url = `/countries/${country.code}`;
 
-  const og = `/og?type=country&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(
-    `Country code: ${country.code}`
-  )}${flag ? `&flag=${encodeURIComponent(flag)}` : ""}`;
+  const canonicalPath = `/countries/${cc}`;
+  const canonicalAbs = `${SITE_URL}${canonicalPath}`;
+
+  const ogPath =
+    `/og?type=country&title=${encodeURIComponent(title)}` +
+    `&subtitle=${encodeURIComponent(`Country code: ${cc}`)}` +
+    (flag ? `&flag=${encodeURIComponent(flag)}` : "");
+
+  const ogAbs = `${SITE_URL}${ogPath}`;
 
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: { canonical: canonicalPath },
     openGraph: {
       title,
       description,
-      url,
+      url: canonicalAbs,
       type: "article",
-      images: [og],
+      images: [{ url: ogAbs, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [og],
+      images: [ogAbs],
     },
   };
 }
@@ -121,21 +129,22 @@ export default async function CountryPage({ params }: PageProps) {
   const country = (await getCountryByCode(code)) as unknown as CountryLite | null;
   if (!country) notFound();
 
-  const flag = codeToFlagEmoji(String(country.code));
+  const cc = String(country.code).toUpperCase();
+  const flag = codeToFlagEmoji(cc);
 
   const casinosUnknown = (await getCasinos()) as unknown;
   const casinos = Array.isArray(casinosUnknown) ? (casinosUnknown as CasinoLite[]) : [];
 
-  const codeNorm = String(country.code).toUpperCase();
-
   const available = casinos.filter((c) => {
     if (!Array.isArray(c.countries)) return false;
     const list = (c.countries as unknown[]).map((x) => String(x).toUpperCase());
-    return list.includes(codeNorm);
+    return list.includes(cc);
   });
 
   const relatedGuidesUnknown = (await getGuidesByCountryCode(String(country.code))) as unknown;
-  const relatedGuides = Array.isArray(relatedGuidesUnknown) ? (relatedGuidesUnknown as GuideLite[]) : [];
+  const relatedGuides = Array.isArray(relatedGuidesUnknown)
+    ? (relatedGuidesUnknown as GuideLite[])
+    : [];
 
   const breadcrumbLd = buildBreadcrumbJsonLd(String(country.name), String(country.code));
 
@@ -147,19 +156,19 @@ export default async function CountryPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
-      <div className="grid" style={{ gap: 18 }}>
+      <article className="grid" style={{ gap: 18 }}>
         {/* HERO */}
-        <section className="card" style={{ padding: 22 }}>
+        <header className="card" style={{ padding: 22 }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
-            <div className="badge">🌍 Country</div>
+            <p className="badge">🌍 Country</p>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <nav aria-label="Country page links" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <Link className="navlink" href="/countries">
                 ← Back to countries
               </Link>
               <span className="kbd">{String(country.code)}</span>
               <span className="kbd">{available.length} casinos</span>
-            </div>
+            </nav>
           </div>
 
           <h1 className="h1" style={{ marginTop: 12 }}>
@@ -172,78 +181,87 @@ export default async function CountryPage({ params }: PageProps) {
               ? String(country.description)
               : `This page lists online casinos available in ${String(country.name)}, plus useful guides and internal links.`}
           </p>
-        </section>
+        </header>
 
         {/* CASINOS */}
-        <section className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Casinos available</h2>
+        <section className="card" aria-labelledby="casinos-available">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2" id="casinos-available">
+              Casinos available
+            </h2>
             <Link href="/casinos" className="small">
               all casinos →
             </Link>
-          </div>
-          <p className="p">Casinos currently marked as available for this country.</p>
+          </header>
 
+          <p className="p">Casinos currently marked as available for this country.</p>
           <div className="hr" />
 
           {available.length === 0 ? (
             <p className="p">No casinos linked to this country yet.</p>
           ) : (
-            <div className="grid grid-2">
+            <ul className="grid grid-2" aria-label="Casinos list">
               {available
                 .slice()
                 .sort((a, b) => ratingNumber(b.rating) - ratingNumber(a.rating))
-                .map((c) => (
-                  <div key={String(c.slug)} className="card" style={{ background: "var(--panel)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <Link href={`/casinos/${String(c.slug)}`}>{String(c.name)}</Link>
-                      <span className="small">
-                        {ratingNumber(c.rating) > 0 ? `⭐ ${ratingNumber(c.rating).toFixed(1)}` : ""}
-                      </span>
-                    </div>
-                    {c.description ? (
-                      <p className="small" style={{ marginTop: 8 }}>
-                        {String(c.description)}
-                      </p>
-                    ) : null}
-                  </div>
-                ))}
-            </div>
+                .map((c) => {
+                  const r = ratingNumber(c.rating);
+                  return (
+                    <li key={String(c.slug)} className="card" style={{ background: "var(--panel)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+                        <Link href={`/casinos/${String(c.slug)}`}>{String(c.name)}</Link>
+                        <span className="small">{r > 0 ? `⭐ ${r.toFixed(1)}` : ""}</span>
+                      </div>
+
+                      {c.description ? (
+                        <p className="small" style={{ marginTop: 8 }}>
+                          {String(c.description)}
+                        </p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+            </ul>
           )}
         </section>
 
         {/* RELATED GUIDES */}
-        <section className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Related guides</h2>
+        <section className="card" aria-labelledby="related-guides">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2" id="related-guides">
+              Related guides
+            </h2>
             <Link href="/guides" className="small">
               all guides →
             </Link>
-          </div>
-          <p className="p">Guides that are relevant for this country or region.</p>
+          </header>
 
+          <p className="p">Guides that are relevant for this country or region.</p>
           <div className="hr" />
 
           {relatedGuides.length === 0 ? (
             <p className="p">No related guides yet.</p>
           ) : (
-            <div className="list">
+            <ul className="list" aria-label="Guides list">
               {relatedGuides.map((g) => (
-                <div key={String(g.slug)} className="item">
+                <li key={String(g.slug)} className="item">
                   <Link href={`/guides/${String(g.slug)}`}>{String(g.title)}</Link>
                   <span className="small">guide</span>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </section>
 
         {/* NEXT LINKS */}
-        <section className="card">
-          <h2 className="h2">Explore more</h2>
+        <section className="card" aria-labelledby="explore-more">
+          <h2 className="h2" id="explore-more">
+            Explore more
+          </h2>
           <p className="p">Build topical authority with strong internal linking across sections.</p>
           <div className="hr" />
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+
+          <nav aria-label="Explore sections" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link className="navlink" href="/casinos">
               Casinos
             </Link>
@@ -253,9 +271,9 @@ export default async function CountryPage({ params }: PageProps) {
             <Link className="navlink" href="/guides">
               Guides
             </Link>
-          </div>
+          </nav>
         </section>
-      </div>
+      </article>
     </>
   );
 }

@@ -3,34 +3,52 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 
-const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
+).replace(/\/$/, "");
+
+const SITE_NAME = "Gold Star";
+const DEFAULT_DESCRIPTION = "Gold Star — casino reviews, countries, and guides.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: "Gold Star",
-    template: "%s | Gold Star",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "Gold Star — casino reviews, countries, and guides.",
+  description: DEFAULT_DESCRIPTION,
 
   openGraph: {
     type: "website",
-    siteName: "Gold Star",
+    siteName: SITE_NAME,
+    url: "/",
+    title: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
     images: [
       {
-        url: "/og-default.png",
+        url:
+          "/og?type=page&title=" +
+          encodeURIComponent(SITE_NAME) +
+          "&subtitle=" +
+          encodeURIComponent("Casino reviews, countries, and guides"),
         width: 1200,
         height: 630,
-        alt: "Gold Star",
+        alt: SITE_NAME,
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    images: ["/og-default.png"],
+    title: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
+    images: [
+      "/og?type=page&title=" +
+        encodeURIComponent(SITE_NAME) +
+        "&subtitle=" +
+        encodeURIComponent("Casino reviews, countries, and guides"),
+    ],
   },
 };
 
@@ -39,34 +57,47 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru">
       <body>
         <header className="header">
-          <div className="nav">
-            <Link href="/" className="brand" aria-label="Gold Star home">
-              <span className="brand-badge">⭐ Gold Star</span>
+          <nav className="nav" aria-label="Primary">
+            <Link href="/" className="brand" aria-label={`${SITE_NAME} home`}>
+              <span className="brand-badge">⭐ {SITE_NAME}</span>
               <span className="small">Casino reviews</span>
             </Link>
 
-            <nav className="navlinks" aria-label="Main navigation">
-              <Link className="navlink" href="/casinos">
-                Casinos
-              </Link>
-              <Link className="navlink" href="/countries">
-                Countries
-              </Link>
-              <Link className="navlink" href="/guides">
-                Guides
-              </Link>
-            </nav>
-          </div>
+            <ul className="navlinks">
+              <li>
+                <Link className="navlink" href="/casinos">
+                  Casinos
+                </Link>
+              </li>
+              <li>
+                <Link className="navlink" href="/countries">
+                  Countries
+                </Link>
+              </li>
+              <li>
+                <Link className="navlink" href="/guides">
+                  Guides
+                </Link>
+              </li>
+            </ul>
+          </nav>
         </header>
 
-        <div className="container">
-          <main className="main">{children}</main>
-        </div>
+        <main className="container">
+          <div className="main">{children}</div>
+        </main>
 
         <footer className="footer">
           <div className="container" style={{ padding: 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <small>© {new Date().getFullYear()} Gold Star</small>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <small>© {new Date().getFullYear()} {SITE_NAME}</small>
               <small className="small">Trusted reviews & guides</small>
             </div>
           </div>

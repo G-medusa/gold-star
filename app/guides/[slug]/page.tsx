@@ -8,8 +8,9 @@ import { getCasinos } from "@/lib/casinos";
 import { getCountries } from "@/lib/countries";
 import { jsonLd } from "@/lib/schema";
 
-const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
+).replace(/\/$/, "");
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -116,28 +117,32 @@ export async function generateMetadata(
     guide.description != null
       ? String(guide.description)
       : `Read our guide: ${title}. Practical tips, steps, and internal links.`;
-  const url = `/guides/${String(guide.slug)}`;
 
-  const og = `/og?type=guide&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(
-    "Step-by-step casino guide"
-  )}`;
+  const canonicalPath = `/guides/${String(guide.slug)}`;
+  const canonicalAbs = `${SITE_URL}${canonicalPath}`;
+
+  const ogPath =
+    `/og?type=guide&title=${encodeURIComponent(title)}` +
+    `&subtitle=${encodeURIComponent("Step-by-step casino guide")}`;
+
+  const ogAbs = `${SITE_URL}${ogPath}`;
 
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: { canonical: canonicalPath },
     openGraph: {
       title,
       description,
-      url,
+      url: canonicalAbs,
       type: "article",
-      images: [og],
+      images: [{ url: ogAbs, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [og],
+      images: [ogAbs],
     },
   };
 }
@@ -161,7 +166,9 @@ export default async function GuidePage({ params }: PageProps) {
   const relatedCasinoSlugs = toStringArray(guide.relatedCasinos).map((s) => s.toLowerCase());
   const relatedCountryCodes = toStringArray(guide.relatedCountries).map((c) => c.toUpperCase());
 
-  const relatedCasinos = casinos.filter((c) => relatedCasinoSlugs.includes(String(c.slug).toLowerCase()));
+  const relatedCasinos = casinos.filter((c) =>
+    relatedCasinoSlugs.includes(String(c.slug).toLowerCase())
+  );
   const relatedCountries = countries.filter((c) =>
     relatedCountryCodes.includes(String(c.code).toUpperCase())
   );
@@ -186,19 +193,19 @@ export default async function GuidePage({ params }: PageProps) {
         />
       ) : null}
 
-      <div className="grid" style={{ gap: 18 }}>
+      <article className="grid" style={{ gap: 18 }}>
         {/* HERO */}
-        <section className="card" style={{ padding: 22 }}>
+        <header className="card" style={{ padding: 22 }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
-            <div className="badge">📘 Guide</div>
+            <p className="badge">📘 Guide</p>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <nav aria-label="Guide page links" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <Link className="navlink" href="/guides">
                 ← Back to guides
               </Link>
               <span className="kbd">faq</span>
               <span className="kbd">internal links</span>
-            </div>
+            </nav>
           </div>
 
           <h1 className="h1" style={{ marginTop: 12 }}>
@@ -210,11 +217,13 @@ export default async function GuidePage({ params }: PageProps) {
               ? String(guide.description)
               : "A practical guide with clear steps, tips, and helpful internal links."}
           </p>
-        </section>
+        </header>
 
         {/* CONTENT */}
-        <section className="card">
-          <h2 className="h2">Guide</h2>
+        <section className="card" aria-labelledby="guide-content">
+          <h2 className="h2" id="guide-content">
+            Guide
+          </h2>
           <div className="hr" />
 
           {guide.content ? (
@@ -230,74 +239,85 @@ export default async function GuidePage({ params }: PageProps) {
         </section>
 
         {/* RELATED CASINOS */}
-        <section className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Related casinos</h2>
+        <section className="card" aria-labelledby="related-casinos">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2" id="related-casinos">
+              Related casinos
+            </h2>
             <Link href="/casinos" className="small">
               all casinos →
             </Link>
-          </div>
+          </header>
+
           <p className="p">Casinos mentioned or recommended in this guide.</p>
           <div className="hr" />
 
           {relatedCasinos.length === 0 ? (
             <p className="p">No related casinos linked yet.</p>
           ) : (
-            <div className="grid grid-2">
-              {relatedCasinos.map((c) => (
-                <div key={String(c.slug)} className="card" style={{ background: "var(--panel)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                    <Link href={`/casinos/${String(c.slug)}`}>{String(c.name)}</Link>
-                    <span className="small">
-                      {ratingNumber(c.rating) > 0 ? `⭐ ${ratingNumber(c.rating).toFixed(1)}` : ""}
-                    </span>
-                  </div>
-                  {c.description ? (
-                    <p className="small" style={{ marginTop: 8 }}>
-                      {String(c.description)}
-                    </p>
-                  ) : null}
-                </div>
-              ))}
-            </div>
+            <ul className="grid grid-2" aria-label="Casinos list">
+              {relatedCasinos.map((c) => {
+                const r = ratingNumber(c.rating);
+                return (
+                  <li key={String(c.slug)} className="card" style={{ background: "var(--panel)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+                      <Link href={`/casinos/${String(c.slug)}`}>{String(c.name)}</Link>
+                      <span className="small">{r > 0 ? `⭐ ${r.toFixed(1)}` : ""}</span>
+                    </div>
+
+                    {c.description ? (
+                      <p className="small" style={{ marginTop: 8 }}>
+                        {String(c.description)}
+                      </p>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </section>
 
         {/* RELATED COUNTRIES */}
-        <section className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Related countries</h2>
+        <section className="card" aria-labelledby="related-countries">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2" id="related-countries">
+              Related countries
+            </h2>
             <Link href="/countries" className="small">
               all countries →
             </Link>
-          </div>
+          </header>
+
           <p className="p">Countries and regions covered by this guide.</p>
           <div className="hr" />
 
           {relatedCountries.length === 0 ? (
             <p className="p">No related countries linked yet.</p>
           ) : (
-            <div className="grid grid-2">
+            <ul className="grid grid-2" aria-label="Countries list">
               {relatedCountries.map((c) => (
-                <div key={String(c.code)} className="card" style={{ background: "var(--panel)" }}>
+                <li key={String(c.code)} className="card" style={{ background: "var(--panel)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
                     <Link href={`/countries/${String(c.code)}`}>{String(c.name)}</Link>
                     <span className="small">{String(c.code)}</span>
                   </div>
+
                   {c.description ? (
                     <p className="small" style={{ marginTop: 8 }}>
                       {String(c.description)}
                     </p>
                   ) : null}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </section>
 
         {/* FAQ (visible) */}
-        <section className="card">
-          <h2 className="h2">FAQ</h2>
+        <section className="card" aria-labelledby="faq">
+          <h2 className="h2" id="faq">
+            FAQ
+          </h2>
           <p className="p">Quick answers related to this guide.</p>
           <div className="hr" />
 
@@ -307,25 +327,28 @@ export default async function GuidePage({ params }: PageProps) {
               enable FAQ schema.
             </p>
           ) : (
-            <div className="list">
+            <dl className="list" aria-label="FAQ list">
               {faq.map((qa) => (
                 <div key={qa.question} className="card" style={{ background: "var(--panel)" }}>
-                  <div style={{ fontWeight: 800 }}>{qa.question}</div>
-                  <p className="p" style={{ marginTop: 8 }}>
+                  <dt style={{ fontWeight: 800 }}>{qa.question}</dt>
+                  <dd className="p" style={{ marginTop: 8 }}>
                     {qa.answer}
-                  </p>
+                  </dd>
                 </div>
               ))}
-            </div>
+            </dl>
           )}
         </section>
 
         {/* NEXT LINKS */}
-        <section className="card">
-          <h2 className="h2">Explore more</h2>
+        <section className="card" aria-labelledby="explore-more">
+          <h2 className="h2" id="explore-more">
+            Explore more
+          </h2>
           <p className="p">Use internal linking to grow topical authority and navigation depth.</p>
           <div className="hr" />
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+
+          <nav aria-label="Explore sections" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link className="navlink" href="/casinos">
               Casinos
             </Link>
@@ -335,9 +358,9 @@ export default async function GuidePage({ params }: PageProps) {
             <Link className="navlink" href="/guides">
               Guides
             </Link>
-          </div>
+          </nav>
         </section>
-      </div>
+      </article>
     </>
   );
 }

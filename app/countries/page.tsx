@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getCountries } from "@/lib/countries";
 import { jsonLd } from "@/lib/schema";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app").replace(/\/$/, "");
 
 export const metadata: Metadata = {
   title: "Online Casinos by Country",
