@@ -16,7 +16,6 @@ const SITE_URL = (
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
-
 type CasinoLite = {
   id: string;
   slug: string;
@@ -39,7 +38,14 @@ type CasinoLite = {
   content?: unknown;
   internalLinks?: unknown;
 
-  assets?: unknown;
+  assets?: {
+    hero?: string;
+    ogImage?: string;
+    screenshots?: {
+      src: string;
+      alt: string;
+    }[];
+  };
 };
 
 type CountryLite = {
@@ -215,7 +221,7 @@ export async function generateMetadata(
 const rating = typeof casino.rating === "number" ? casino.rating.toFixed(1) : "";
 
 // пробуем взять ogImage из assets
-const assets = (casino as any).assets as { ogImage?: string } | undefined;
+const assets = casino.assets;
 const ogImageFromAssets =
   assets && typeof assets.ogImage === "string" ? assets.ogImage : null;
 
@@ -260,7 +266,7 @@ export default async function CasinoPage({ params }: PageProps) {
   if (!casino) notFound();
 
   // assets (строгое чтение)
-  const assetsRec = asRecord((casino as any).assets);
+const assetsRec = asRecord(casino.assets);
   const assets = assetsRec
     ? {
         logo: typeof assetsRec.logo === "string" ? assetsRec.logo : null,
