@@ -85,8 +85,18 @@ function toFaqArray(x: unknown): Array<{ question: string; answer: string }> {
   for (const item of x as unknown[]) {
     if (!item || typeof item !== "object") continue;
     const o = item as Record<string, unknown>;
-    const q = typeof o.question === "string" ? o.question : typeof o.q === "string" ? o.q : null;
-    const a = typeof o.answer === "string" ? o.answer : typeof o.a === "string" ? o.a : null;
+    const q =
+      typeof o.question === "string"
+        ? o.question
+        : typeof o.q === "string"
+          ? o.q
+          : null;
+    const a =
+      typeof o.answer === "string"
+        ? o.answer
+        : typeof o.a === "string"
+          ? o.a
+          : null;
     if (q && a) out.push({ question: q, answer: a });
   }
   return out;
@@ -130,7 +140,11 @@ function toContentSections(x: unknown): ContentSection[] {
     const title = asString(o.title) ?? "";
     const bullets = toStringArray(o.bullets);
     if (!title || bullets.length === 0) continue;
-    out.push({ id: id || title.toLowerCase().replace(/\s+/g, "-"), title, bullets });
+    out.push({
+      id: id || title.toLowerCase().replace(/\s+/g, "-"),
+      title,
+      bullets,
+    });
   }
   return out;
 }
@@ -218,25 +232,24 @@ export async function generateMetadata(
   const canonicalPath = `/casinos/${casino.slug}`;
   const canonicalAbs = `${SITE_URL}${canonicalPath}`;
 
-const rating = typeof casino.rating === "number" ? casino.rating.toFixed(1) : "";
+  const rating = typeof casino.rating === "number" ? casino.rating.toFixed(1) : "";
 
-// пробуем взять ogImage из assets
-const assets = casino.assets;
-const ogImageFromAssets =
-  assets && typeof assets.ogImage === "string" ? assets.ogImage : null;
+  // пробуем взять ogImage из assets
+  const assets = casino.assets;
+  const ogImageFromAssets =
+    assets && typeof assets.ogImage === "string" ? assets.ogImage : null;
 
-// fallback на старый /og
-const ogPath =
-  `/og?type=casino&title=${encodeURIComponent(title)}` +
-  `&subtitle=${encodeURIComponent("Bonuses • Payments • Features")}` +
-  (rating ? `&rating=${encodeURIComponent(rating)}` : "");
+  // fallback на старый /og
+  const ogPath =
+    `/og?type=casino&title=${encodeURIComponent(title)}` +
+    `&subtitle=${encodeURIComponent("Bonuses • Payments • Features")}` +
+    (rating ? `&rating=${encodeURIComponent(rating)}` : "");
 
-const ogAbs = ogImageFromAssets
-  ? ogImageFromAssets.startsWith("http")
-    ? ogImageFromAssets
-    : `${SITE_URL}${ogImageFromAssets}`
-  : `${SITE_URL}${ogPath}`;
-
+  const ogAbs = ogImageFromAssets
+    ? ogImageFromAssets.startsWith("http")
+      ? ogImageFromAssets
+      : `${SITE_URL}${ogImageFromAssets}`
+    : `${SITE_URL}${ogPath}`;
 
   return {
     title,
@@ -266,7 +279,7 @@ export default async function CasinoPage({ params }: PageProps) {
   if (!casino) notFound();
 
   // assets (строгое чтение)
-const assetsRec = asRecord(casino.assets);
+  const assetsRec = asRecord(casino.assets);
   const assets = assetsRec
     ? {
         logo: typeof assetsRec.logo === "string" ? assetsRec.logo : null,
@@ -332,7 +345,9 @@ const assetsRec = asRecord(casino.assets);
     ? (casino.countries as unknown[]).map((x) => String(x))
     : [];
 
-  const availableCountries = allCountries.filter((c) => countryCodes.includes(String(c.code)));
+  const availableCountries = allCountries.filter((c) =>
+    countryCodes.includes(String(c.code))
+  );
 
   // Related guides (from dataset)
   const relatedGuidesUnknown = (await getGuidesByCasinoSlug(String(casino.slug))) as unknown;
@@ -357,6 +372,10 @@ const assetsRec = asRecord(casino.assets);
     mobileNotes.length > 0 ||
     safetyNotes.length > 0 ||
     faq.length > 0;
+
+  const casinoName = String(casino.name);
+  const casinoSlug = String(casino.slug);
+  const canonicalUrl = `/casinos/${casinoSlug}`;
 
   return (
     <>
@@ -386,7 +405,7 @@ const assetsRec = asRecord(casino.assets);
             <figure style={{ marginBottom: 16 }}>
               <Image
                 src={assets.hero}
-                alt={`${casino.name} casino interface`}
+                alt={`${casinoName} casino interface`}
                 width={1600}
                 height={900}
                 priority
@@ -394,12 +413,13 @@ const assetsRec = asRecord(casino.assets);
                 style={{ width: "100%", height: "auto", borderRadius: 12 }}
               />
               <figcaption className="small" style={{ marginTop: 6 }}>
-                {casino.name} interface preview
+                {casinoName} interface preview
               </figcaption>
             </figure>
           ) : null}
 
-          <div
+          <section
+            aria-label="Page context"
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -425,10 +445,10 @@ const assetsRec = asRecord(casino.assets);
 
               {rating ? <span className="kbd">⭐ {rating}</span> : null}
             </nav>
-          </div>
+          </section>
 
           <h1 className="h1" style={{ marginTop: 12 }}>
-            {casino.name}
+            {casinoName}
           </h1>
 
           <p className="p" style={{ maxWidth: 900 }}>
@@ -453,7 +473,9 @@ const assetsRec = asRecord(casino.assets);
               <div className="card" style={{ padding: 14, background: "var(--panel)" }}>
                 <dt className="small">Coverage</dt>
                 <dd style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>
-                  {availableCountries.length > 0 ? `${availableCountries.length} countries` : "Coming soon"}
+                  {availableCountries.length > 0
+                    ? `${availableCountries.length} countries`
+                    : "Coming soon"}
                 </dd>
                 <dd className="small" style={{ marginTop: 6 }}>
                   Regional availability can vary by regulation.
@@ -473,7 +495,9 @@ const assetsRec = asRecord(casino.assets);
               {paymentsFocus ? (
                 <div className="card" style={{ padding: 14, background: "var(--panel)" }}>
                   <dt className="small">Payments focus</dt>
-                  <dd style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>{paymentsFocus}</dd>
+                  <dd style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>
+                    {paymentsFocus}
+                  </dd>
                   <dd className="small" style={{ marginTop: 6 }}>
                     Confirm available methods before depositing.
                   </dd>
@@ -486,14 +510,20 @@ const assetsRec = asRecord(casino.assets);
         {/* SCREENSHOTS (from assets) */}
         {assets.screenshots.length > 0 ? (
           <section className="card" aria-labelledby="screenshots">
-            <h2 className="h2" id="screenshots">
-              Screenshots
-            </h2>
-            <p className="p">Selected interface views for usability context.</p>
+            <header>
+              <h2 className="h2" id="screenshots">
+                Screenshots
+              </h2>
+              <p className="p">Selected interface views for usability context.</p>
+            </header>
 
             <div className="hr" />
 
-            <ul className="grid grid-2" aria-label="Screenshots list" style={{ listStyle: "none", padding: 0 }}>
+            <ul
+              className="grid grid-2"
+              aria-label="Screenshots list"
+              style={{ listStyle: "none", padding: 0 }}
+            >
               {assets.screenshots.map((s) => (
                 <li key={s.src}>
                   <figure>
@@ -518,13 +548,16 @@ const assetsRec = asRecord(casino.assets);
         {/* REVIEW */}
         {hasReviewSections ? (
           <section className="card" aria-labelledby="review">
-            <h2 className="h2" id="review">
-              Review
-            </h2>
-            <p className="p">
-              Practical notes and expectations — focused on payments, usability, and the rules that affect real
-              usage.
-            </p>
+            <header>
+              <h2 className="h2" id="review">
+                Review
+              </h2>
+              <p className="p">
+                Practical notes and expectations — focused on payments, usability, and the rules that affect
+                real usage.
+              </p>
+            </header>
+
             <div className="hr" />
 
             {/* Editorial sections (preferred) */}
@@ -726,7 +759,11 @@ const assetsRec = asRecord(casino.assets);
                 </h3>
                 <dl className="grid" style={{ gap: 10 }}>
                   {faq.map((qa) => (
-                    <div key={qa.question} className="card" style={{ padding: 14, background: "var(--panel)" }}>
+                    <div
+                      key={qa.question}
+                      className="card"
+                      style={{ padding: 14, background: "var(--panel)" }}
+                    >
                       <dt style={{ fontWeight: 800 }}>{qa.question}</dt>
                       <dd className="p" style={{ marginTop: 8 }}>
                         {qa.answer}
@@ -782,10 +819,12 @@ const assetsRec = asRecord(casino.assets);
 
         {/* AVAILABLE IN */}
         <section className="card" aria-labelledby="available-in">
-          <h2 className="h2" id="available-in">
-            Available in
-          </h2>
-          <p className="p">Countries where this casino is currently listed as available.</p>
+          <header>
+            <h2 className="h2" id="available-in">
+              Available in
+            </h2>
+            <p className="p">Countries where this casino is currently listed as available.</p>
+          </header>
 
           <div className="hr" />
 
@@ -795,10 +834,13 @@ const assetsRec = asRecord(casino.assets);
             <ul className="grid grid-2" aria-label="Countries list">
               {availableCountries.map((c) => (
                 <li key={c.code} className="card" style={{ background: "var(--panel)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+                  <section
+                    aria-label={`${c.name} availability`}
+                    style={{ display: "flex", justifyContent: "space-between", gap: 10 }}
+                  >
                     <Link href={`/countries/${c.code}`}>{c.name}</Link>
                     <span className="small">{c.code}</span>
-                  </div>
+                  </section>
 
                   {c.description ? (
                     <p className="small" style={{ marginTop: 8 }}>
@@ -842,12 +884,14 @@ const assetsRec = asRecord(casino.assets);
 
         {/* NEXT LINKS */}
         <section className="card" aria-labelledby="explore-more">
-          <h2 className="h2" id="explore-more">
-            Explore more
-          </h2>
-          <p className="p">
-            Keep browsing the catalog — the fastest way to grow internal linking and topical authority.
-          </p>
+          <header>
+            <h2 className="h2" id="explore-more">
+              Explore more
+            </h2>
+            <p className="p">
+              Keep browsing the catalog — the fastest way to grow internal linking and topical authority.
+            </p>
+          </header>
 
           <div className="hr" />
 
@@ -862,6 +906,10 @@ const assetsRec = asRecord(casino.assets);
               Guides
             </Link>
           </nav>
+
+          <p className="small" style={{ marginTop: 12 }}>
+            Canonical: <Link href={canonicalUrl}>{canonicalUrl}</Link>
+          </p>
         </section>
       </article>
     </>

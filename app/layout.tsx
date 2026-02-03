@@ -83,8 +83,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </nav>
         </header>
 
-        <main className="container">
-          <div className="main">{children}</div>
+        <main id="main-content" className="container">
+          {children}
         </main>
 
         <footer className="footer">
@@ -97,7 +97,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 flexWrap: "wrap",
               }}
             >
-              <small>© {new Date().getFullYear()} {SITE_NAME}</small>
+              <small>
+                © {new Date().getFullYear()} {SITE_NAME}
+              </small>
               <small className="small">Trusted reviews & guides</small>
             </div>
           </div>
