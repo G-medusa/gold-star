@@ -2,16 +2,177 @@
   "id": "stake",
   "slug": "stake",
   "name": "Stake",
+  "locale": "en",
+
+  "assets": {
+    "logo": "/casinos/stake/logo.svg",
+    "hero": "/casinos/stake/hero-1600x900.webp",
+    "ogImage": "/casinos/stake/og-1200x630.png",
+    "screenshots": [
+      {
+        "src": "/casinos/stake/screenshots/homepage-1280.webp",
+        "alt": "Stake homepage"
+      },
+      {
+        "src": "/casinos/stake/screenshots/lobby-1280.webp",
+        "alt": "Stake casino lobby"
+      },
+      {
+        "src": "/casinos/stake/screenshots/payments-1280.webp",
+        "alt": "Stake cashier and payments"
+      }
+    ]
+  },
+
   "rating": 4.7,
+  "minDeposit": 10,
+
   "countries": ["CA", "DE", "BR", "GB"],
-  "description": "Editorial review of Stake casino focusing on payments, usability, and overall player experience.",
+  "markets": {
+    "goodFor": ["CA", "BR", "DE", "GB"],
+    "unknown": [],
+    "notFor": []
+  },
+
+  "description": "Stake is a crypto-first online casino with a strong mobile interface and a reputation for fast withdrawals. This review focuses on usability, payments, and practical expectations for real users.",
+
+  "overview": {
+    "positioning": "crypto-first casino + sportsbook",
+    "whatToExpect": [
+      "Crypto deposits and withdrawals are a core part of the product",
+      "Mobile experience is generally smooth and fast",
+      "Bonus terms and availability depend on country and account settings"
+    ],
+    "whoItIsFor": [
+      "Players who prefer crypto payments and quick access to withdrawals",
+      "Mobile-first users who value a clean interface",
+      "Users who want a simple, repeatable experience across sessions"
+    ],
+    "whoItIsNotFor": [
+      "Players who want fiat-only payments everywhere",
+      "Users who strongly rely on large bonuses without reading terms",
+      "Beginners who expect everything to be explained inside the interface"
+    ]
+  },
+
+  "payments": {
+    "focus": "crypto",
+    "methods": ["Crypto (varies by asset)", "Card/fiat options (country dependent)"],
+    "withdrawals": {
+      "speed": "often fast with crypto, but varies by verification and method",
+      "notes": [
+        "Withdrawal speed depends on method, verification status, and risk checks",
+        "If you care about withdrawals, choose your payment method first and read the limits"
+      ]
+    },
+    "minDepositNotes": "Minimum deposit is listed as 10, but may vary by method and region."
+  },
+
+  "bonuses": {
+    "summary": "Bonuses exist, but the practical value depends on wagering requirements and restrictions.",
+    "whatToCheck": [
+      "Wagering requirements and max bet rules",
+      "Game weighting (slots vs live games)",
+      "Country restrictions and payment-method limitations"
+    ]
+  },
+
+  "mobile": {
+    "experience": "strong",
+    "notes": [
+      "Mobile navigation is one of the main strengths",
+      "If you play mostly on a phone, check loading speed and cashier usability first"
+    ]
+  },
+
   "pros": [
-    "Fast withdrawals",
-    "Strong mobile experience",
-    "Supports crypto payments"
+    "Fast withdrawals (especially with crypto, depending on verification)",
+    "Strong mobile experience and clean navigation",
+    "Crypto-friendly payments and workflow"
   ],
   "cons": [
-    "Limited availability in some countries",
-    "Bonuses may include wagering requirements"
-  ]
+    "Availability varies by country and regulation",
+    "Bonus value depends on wagering terms (needs checking)",
+    "Interface can feel dense for beginners"
+  ],
+
+  "safety": {
+    "license": "Curacao (as listed in legacy data)",
+    "notes": [
+      "A license alone does not guarantee a perfect experience—review withdrawal rules and verification expectations",
+      "Availability and compliance can differ by country; use country pages to confirm practical access"
+    ]
+  },
+
+  "content": {
+    "sections": [
+      {
+        "id": "quick-facts",
+        "title": "Quick facts",
+        "bullets": [
+          "Positioning: crypto-first casino + sportsbook",
+          "Best for: mobile users and crypto payments",
+          "Key risk: bonus restrictions and regional availability"
+        ]
+      },
+      {
+        "id": "payments-and-withdrawals",
+        "title": "Payments and withdrawals",
+        "bullets": [
+          "Crypto is the primary focus; other methods may depend on region",
+          "Withdrawal speed is often good with crypto but varies with checks and status",
+          "Always confirm limits and required verification before depositing"
+        ]
+      },
+      {
+        "id": "bonuses",
+        "title": "Bonuses",
+        "bullets": [
+          "Treat bonuses as optional—wagering terms decide real value",
+          "Check max bet and restricted games before you opt-in"
+        ]
+      },
+      {
+        "id": "mobile-experience",
+        "title": "Mobile experience",
+        "bullets": [
+          "One of the strongest areas of the platform",
+          "Good choice if you primarily play on a phone"
+        ]
+      }
+    ]
+  },
+
+  "faq": [
+    {
+      "question": "Can I play on mobile?",
+      "answer": "Yes. Stake is generally mobile-friendly. The practical check is the cashier flow and page loading speed on your device."
+    },
+    {
+      "question": "What is the minimum deposit?",
+      "answer": "Legacy data lists 10, but the actual minimum can depend on the payment method and region."
+    },
+    {
+      "question": "Is Stake available in my country?",
+      "answer": "Availability depends on regulation and internal restrictions. Use the country pages and confirm access before depositing."
+    },
+    {
+      "question": "Are withdrawals always fast?",
+      "answer": "Often fast with crypto, but speed depends on method, verification, and checks. Always review withdrawal limits and requirements."
+    }
+  ],
+
+  "internalLinks": {
+    "countries": ["/countries/CA", "/countries/DE", "/countries/BR", "/countries/GB"],
+    "guides": [
+      "/guides/how-to-choose-online-casino",
+      "/guides/how-withdrawals-work",
+      "/guides/bonus-wagering-explained"
+    ]
+  },
+
+  "timestamps": {
+    "created": "2026-02-03",
+    "updated": "2026-02-03"
+  }
 }
