@@ -8,8 +8,9 @@ import { getCountries } from "@/lib/countries";
 import { getGuidesByCasinoSlug } from "@/lib/guides";
 import { jsonLd } from "@/lib/schema";
 
-const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com").replace(/\/$/, "");
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
+).replace(/\/$/, "");
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -79,29 +80,34 @@ export async function generateMetadata(
     casino.description != null
       ? String(casino.description)
       : `Read our review of ${casino.name}: bonuses, features, and key details.`;
-  const url = `/casinos/${casino.slug}`;
+
+  const canonicalPath = `/casinos/${casino.slug}`;
+  const canonicalAbs = `${SITE_URL}${canonicalPath}`;
 
   const rating = typeof casino.rating === "number" ? casino.rating.toFixed(1) : "";
-  const og = `/og?type=casino&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(
-    "Bonuses • Payments • Features"
-  )}${rating ? `&rating=${encodeURIComponent(rating)}` : ""}`;
+  const ogPath =
+    `/og?type=casino&title=${encodeURIComponent(title)}` +
+    `&subtitle=${encodeURIComponent("Bonuses • Payments • Features")}` +
+    (rating ? `&rating=${encodeURIComponent(rating)}` : "");
+
+  const ogAbs = `${SITE_URL}${ogPath}`;
 
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: { canonical: canonicalPath },
     openGraph: {
       title,
       description,
-      url,
+      url: canonicalAbs,
       type: "article",
-      images: [og],
+      images: [{ url: ogAbs, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [og],
+      images: [ogAbs],
     },
   };
 }
@@ -144,23 +150,25 @@ export default async function CasinoPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
-      <div className="grid" style={{ gap: 18 }}>
+      <article className="grid" style={{ gap: 18 }}>
         {/* HERO */}
-        <section className="card" style={{ padding: 22 }}>
+        <header className="card" style={{ padding: 22 }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
-            <div className="badge">🎰 Casino Review</div>
+            <p className="badge">🎰 Casino Review</p>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <nav aria-label="Casino page links" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <Link className="navlink" href="/casinos">
                 ← Back to casinos
               </Link>
+
               {availableCountries.length > 0 ? (
                 <span className="kbd">{availableCountries.length} countries</span>
               ) : (
                 <span className="kbd">availability soon</span>
               )}
+
               {rating ? <span className="kbd">⭐ {rating}</span> : null}
-            </div>
+            </nav>
           </div>
 
           <h1 className="h1" style={{ marginTop: 12 }}>
@@ -175,33 +183,37 @@ export default async function CasinoPage({ params }: PageProps) {
 
           <div className="hr" />
 
-          {/* Quick facts (safe, optional fields) */}
-          <div className="grid grid-2">
-            <div className="card" style={{ padding: 14, background: "var(--panel)" }}>
-              <div className="small">Rating</div>
-              <div style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>
-                {rating ? `⭐ ${rating} / 5` : "—"}
+          {/* Quick facts */}
+          <section aria-label="Quick facts">
+            <dl className="grid grid-2">
+              <div className="card" style={{ padding: 14, background: "var(--panel)" }}>
+                <dt className="small">Rating</dt>
+                <dd style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>
+                  {rating ? `⭐ ${rating} / 5` : "—"}
+                </dd>
+                <dd className="small" style={{ marginTop: 6 }}>
+                  Based on our editorial scoring model.
+                </dd>
               </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Based on our editorial scoring model.
-              </div>
-            </div>
 
-            <div className="card" style={{ padding: 14, background: "var(--panel)" }}>
-              <div className="small">Coverage</div>
-              <div style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>
-                {availableCountries.length > 0 ? `${availableCountries.length} countries` : "Coming soon"}
+              <div className="card" style={{ padding: 14, background: "var(--panel)" }}>
+                <dt className="small">Coverage</dt>
+                <dd style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>
+                  {availableCountries.length > 0 ? `${availableCountries.length} countries` : "Coming soon"}
+                </dd>
+                <dd className="small" style={{ marginTop: 6 }}>
+                  Regional availability can vary by regulation.
+                </dd>
               </div>
-              <div className="small" style={{ marginTop: 6 }}>
-                Regional availability can vary by regulation.
-              </div>
-            </div>
-          </div>
-        </section>
+            </dl>
+          </section>
+        </header>
 
         {/* AVAILABLE IN */}
-        <section className="card">
-          <h2 className="h2">Available in</h2>
+        <section className="card" aria-labelledby="available-in">
+          <h2 className="h2" id="available-in">
+            Available in
+          </h2>
           <p className="p">Countries where this casino is currently listed as available.</p>
 
           <div className="hr" />
@@ -209,32 +221,36 @@ export default async function CasinoPage({ params }: PageProps) {
           {availableCountries.length === 0 ? (
             <p className="p">No countries linked yet for this casino.</p>
           ) : (
-            <div className="grid grid-2">
+            <ul className="grid grid-2" aria-label="Countries list">
               {availableCountries.map((c) => (
-                <div key={c.code} className="card" style={{ background: "var(--panel)" }}>
+                <li key={c.code} className="card" style={{ background: "var(--panel)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
                     <Link href={`/countries/${c.code}`}>{c.name}</Link>
                     <span className="small">{c.code}</span>
                   </div>
+
                   {c.description ? (
                     <p className="small" style={{ marginTop: 8 }}>
                       {String(c.description)}
                     </p>
                   ) : null}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </section>
 
         {/* RELATED GUIDES */}
-        <section className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <h2 className="h2">Related guides</h2>
+        <section className="card" aria-labelledby="related-guides">
+          <header style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+            <h2 className="h2" id="related-guides">
+              Related guides
+            </h2>
             <Link href="/guides" className="small">
               all guides →
             </Link>
-          </div>
+          </header>
+
           <p className="p">Guides that mention or explain how to use this casino effectively.</p>
 
           <div className="hr" />
@@ -242,25 +258,29 @@ export default async function CasinoPage({ params }: PageProps) {
           {relatedGuides.length === 0 ? (
             <p className="p">No related guides yet.</p>
           ) : (
-            <div className="list">
+            <ul className="list" aria-label="Guides list">
               {relatedGuides.map((g) => (
-                <div key={g.slug} className="item">
+                <li key={g.slug} className="item">
                   <Link href={`/guides/${g.slug}`}>{g.title}</Link>
                   <span className="small">guide</span>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </section>
 
         {/* NEXT LINKS */}
-        <section className="card">
-          <h2 className="h2">Explore more</h2>
+        <section className="card" aria-labelledby="explore-more">
+          <h2 className="h2" id="explore-more">
+            Explore more
+          </h2>
           <p className="p">
             Keep browsing the catalog — the fastest way to grow internal linking and topical authority.
           </p>
+
           <div className="hr" />
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+
+          <nav aria-label="Explore sections" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link className="navlink" href="/casinos">
               Casinos
             </Link>
@@ -270,9 +290,9 @@ export default async function CasinoPage({ params }: PageProps) {
             <Link className="navlink" href="/guides">
               Guides
             </Link>
-          </div>
+          </nav>
         </section>
-      </div>
+      </article>
     </>
   );
 }

@@ -1,0 +1,10 @@
+{
+  "id": "bet365",
+  "slug": "bet365",
+  "name": "bet365",
+  "rating": 4.5,
+  "countries": ["GB", "IE", "ES"],
+  "description": "bet365 is a well known betting platform with a strong focus on live betting and mobile usability.",
+  "pros": ["Strong live betting", "Reliable brand", "Good mobile experience"],
+  "cons": ["Limited availability by country", "Strict verification in some regions"]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "stake",
+  "slug": "stake",
+  "name": "Stake",
+  "rating": 4.7,
+  "countries": ["CA", "DE", "BR", "GB"],
+  "description": "Editorial review of Stake casino focusing on payments, usability, and overall player experience.",
+  "pros": [
+    "Fast withdrawals",
+    "Strong mobile experience",
+    "Supports crypto payments"
+  ],
+  "cons": [
+    "Limited availability in some countries",
+    "Bonuses may include wagering requirements"
+  ]
+}

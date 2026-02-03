@@ -1,4 +1,6 @@
-import casinosJson from "@/data/casinos.json";
+// lib/casinos.ts
+import { promises as fs } from "fs";
+import path from "path";
 
 export type Casino = {
   id: string;
@@ -8,12 +10,14 @@ export type Casino = {
   minDeposit?: number;
   countries: string[];
 
-  // опционально, если у тебя есть
   description?: string;
   pros?: string[];
   cons?: string[];
   faq?: { question: string; answer: string }[];
+  locale?: string; // на будущее
 };
+
+const CASINOS_DIR = path.join(process.cwd(), "data", "casinos");
 
 function toStringArray(x: unknown): string[] {
   if (!Array.isArray(x)) return [];
@@ -38,50 +42,56 @@ function toCasino(x: unknown): Casino | null {
   if (!x || typeof x !== "object") return null;
   const o = x as Record<string, unknown>;
 
-  const id = o.id;
-  const slug = o.slug;
-  const name = o.name;
-  const rating = o.rating;
-
-  if (typeof id !== "string") return null;
-  if (typeof slug !== "string") return null;
-  if (typeof name !== "string") return null;
-  if (typeof rating !== "number") return null;
-
-  const countries = toStringArray(o.countries);
-  if (countries.length === 0) return null;
-
-  const minDeposit = o.minDeposit;
-  const description = o.description;
+  if (typeof o.slug !== "string") return null;
+  if (typeof o.name !== "string") return null;
+  if (typeof o.rating !== "number") return null;
+  if (!Array.isArray(o.countries) || o.countries.length === 0) return null;
 
   return {
-    id,
-    slug,
-    name,
-    rating,
-    countries,
-    ...(typeof minDeposit === "number" ? { minDeposit } : {}),
-    ...(typeof description === "string" ? { description } : {}),
+    id: typeof o.id === "string" ? o.id : o.slug,
+    slug: o.slug,
+    name: o.name,
+    rating: o.rating,
+    countries: toStringArray(o.countries),
+    minDeposit: typeof o.minDeposit === "number" ? o.minDeposit : undefined,
+    description: typeof o.description === "string" ? o.description : undefined,
     pros: toStringArray(o.pros),
     cons: toStringArray(o.cons),
     faq: toFaqArray(o.faq),
+    locale: typeof o.locale === "string" ? o.locale : "en",
   };
 }
 
+async function readCasinoFile(file: string): Promise<Casino | null> {
+  try {
+    const raw = await fs.readFile(path.join(CASINOS_DIR, file), "utf-8");
+    return toCasino(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
 export async function getCasinos(): Promise<Casino[]> {
-  const raw = casinosJson as unknown;
-  if (!Array.isArray(raw)) return [];
-  return raw.map(toCasino).filter((c): c is Casino => c !== null);
+  try {
+    const files = await fs.readdir(CASINOS_DIR);
+    const jsonFiles = files.filter((f) => f.endsWith(".json"));
+
+    const casinos = await Promise.all(jsonFiles.map(readCasinoFile));
+    return casinos.filter((c): c is Casino => c !== null);
+  } catch {
+    return [];
+  }
 }
 
 export async function getCasinoBySlug(slug: string): Promise<Casino | null> {
-  const normalized = slug.toLowerCase();
-  const casinos = await getCasinos();
-  return casinos.find((c) => c.slug.toLowerCase() === normalized) ?? null;
+  const file = `${slug.toLowerCase()}.json`;
+  return readCasinoFile(file);
 }
 
 export async function getCasinosByCountryCode(code: string): Promise<Casino[]> {
   const normalized = code.toLowerCase();
   const casinos = await getCasinos();
-  return casinos.filter((c) => c.countries.some((cc) => cc.toLowerCase() === normalized));
+  return casinos.filter((c) =>
+    c.countries.some((cc) => cc.toLowerCase() === normalized)
+  );
 }
