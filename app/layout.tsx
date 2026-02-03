@@ -3,12 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 
-const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
-).replace(/\/$/, "");
-
-const SITE_NAME = "Gold Star";
-const DEFAULT_DESCRIPTION = "Gold Star — casino reviews, countries, and guides.";
+import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
