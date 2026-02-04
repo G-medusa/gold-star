@@ -4,14 +4,20 @@ import Link from "next/link";
 
 import { getCountries } from "@/lib/countries";
 import { jsonLd } from "@/lib/schema";
-
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app").replace(/\/$/, "");
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Online Casinos by Country",
   description:
     "Browse countries to see regional availability, practical notes about payments and verification, and links to relevant casino reviews and guides.",
-  alternates: { canonical: `${SITE_URL}/countries` },
+  alternates: { canonical: absoluteUrl("/countries") },
+  openGraph: {
+    title: "Online Casinos by Country",
+    description:
+      "Browse countries to see regional availability, practical notes about payments and verification, and links to relevant casino reviews and guides.",
+    url: absoluteUrl("/countries"),
+    type: "website",
+  },
 };
 
 type CountryLite = {
@@ -25,8 +31,8 @@ function buildBreadcrumbJsonLd() {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Countries", item: `${SITE_URL}/countries` },
+      { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Countries", item: absoluteUrl("/countries") },
     ],
   });
 }
@@ -69,7 +75,7 @@ export default async function CountriesPage() {
   const itemListLd = buildItemListJsonLd(
     sorted.slice(0, 200).map((c) => ({
       name: String(c.name ?? c.code ?? "Country"),
-      url: `${SITE_URL}/countries/${String(c.code)}`,
+      url: absoluteUrl(`/countries/${String(c.code)}`),
     }))
   );
 
@@ -101,7 +107,7 @@ export default async function CountriesPage() {
             relevant casino reviews, and guides that answer common questions.
           </p>
 
-          <nav style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 6 }}>
+          <nav aria-label="Browse sections" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 6 }}>
             <Link className="navlink" href="/casinos">
               Casino reviews
             </Link>
@@ -113,7 +119,7 @@ export default async function CountriesPage() {
       </section>
 
       {/* Why countries matter */}
-      <section className="grid grid-2">
+      <section className="grid grid-2" aria-label="About country pages">
         <article className="card">
           <h2 className="h2">Why country pages matter</h2>
           <p className="p">
@@ -145,8 +151,10 @@ export default async function CountriesPage() {
       </section>
 
       {/* Practical notes */}
-      <section className="card">
-        <h2 className="h2">A practical way to use this section</h2>
+      <section className="card" aria-labelledby="practical-usage">
+        <h2 className="h2" id="practical-usage">
+          A practical way to use this section
+        </h2>
         <p className="p">
           If your goal is to start playing with fewer surprises, don’t begin with bonuses. Start with
           availability and payments. A generous offer won’t help if the casino does not accept users in
@@ -169,95 +177,109 @@ export default async function CountriesPage() {
           </li>
         </ul>
       </section>
-{/* Common pitfalls */}
-<section className="card">
-  <h2 className="h2">Common pitfalls when choosing a casino by country</h2>
-  <p className="p">
-    Country availability is not only about whether a website opens. In practice, players run into
-    predictable issues: certain payment methods work poorly in a region, withdrawals require extra
-    verification, or promotions have restrictions that are easy to miss when you sign up quickly.
-  </p>
-  <ul className="p">
-    <li>
-      <b>“Accessible” doesn’t always mean “fully supported”:</b> the casino may accept players, but some
-      deposit/withdrawal methods may be limited or slower in the region.
-    </li>
-    <li>
-      <b>Verification timing:</b> many platforms allow deposits instantly but request KYC before the first
-      withdrawal, which can delay payouts if documents are not prepared.
-    </li>
-    <li>
-      <b>Bonus restrictions:</b> some offers apply only to specific countries or payment methods, and the
-      real wagering requirements may be higher than expected.
-    </li>
-    <li>
-      <b>Mobile vs desktop differences:</b> in some regions, mobile is the primary way players access
-      casinos, so usability matters more than catalog size.
-    </li>
-  </ul>
-  <p className="small">
-    The goal of our country pages is to highlight these practical constraints early — before they become
-    a problem later.
-  </p>
-</section>
 
-{/* Payments & withdrawals */}
-<section className="card">
-  <h2 className="h2">Payments, withdrawals and what “fast” really means</h2>
-  <p className="p">
-    “Fast withdrawals” is one of the most common claims in casino marketing, but the real speed depends
-    on your region, payment method, and account status. A casino can process withdrawals quickly after
-    verification, while first time payouts may take longer due to checks.
-  </p>
-  <p className="p">
-    That’s why we treat payments as a first class topic on country pages. When you choose a country, you
-    should be able to shortlist casinos that match how you actually deposit and withdraw — not just what
-    looks good on a landing page.
-  </p>
-  <ul className="p">
-    <li>
-      <b>Pick a comfortable method first:</b> then choose casinos that support it reliably in your country.
-    </li>
-    <li>
-      <b>Expect KYC:</b> prepare documents early if you want fewer delays when withdrawing.
-    </li>
-    <li>
-      <b>Read limits and conditions:</b> minimum/maximum withdrawal rules and fees can matter more than the headline.
-    </li>
-  </ul>
-</section>
+      {/* Common pitfalls */}
+      <section className="card" aria-labelledby="common-pitfalls">
+        <h2 className="h2" id="common-pitfalls">
+          Common pitfalls when choosing a casino by country
+        </h2>
+        <p className="p">
+          Country availability is not only about whether a website opens. In practice, players run into
+          predictable issues: certain payment methods work poorly in a region, withdrawals require extra
+          verification, or promotions have restrictions that are easy to miss when you sign up quickly.
+        </p>
+        <ul className="p">
+          <li>
+            <b>“Accessible” doesn’t always mean “fully supported”:</b> the casino may accept players, but some
+            deposit/withdrawal methods may be limited or slower in the region.
+          </li>
+          <li>
+            <b>Verification timing:</b> many platforms allow deposits instantly but request KYC before the first
+            withdrawal, which can delay payouts if documents are not prepared.
+          </li>
+          <li>
+            <b>Bonus restrictions:</b> some offers apply only to specific countries or payment methods, and the
+            real wagering requirements may be higher than expected.
+          </li>
+          <li>
+            <b>Mobile vs desktop differences:</b> in some regions, mobile is the primary way players access
+            casinos, so usability matters more than catalog size.
+          </li>
+        </ul>
+        <p className="small">
+          The goal of our country pages is to highlight these practical constraints early — before they become
+          a problem later.
+        </p>
+      </section>
 
-{/* Mini FAQ */}
-<section className="card">
-  <h2 className="h2">Quick questions</h2>
-  <h3 className="h2" style={{ marginTop: 10 }}>
-    Can a casino be available in my country but still be a bad fit?
-  </h3>
-  <p className="p">
-    Yes. Availability only means access. Fit depends on payments, withdrawal expectations, mobile usability,
-    and whether the rules match how you plan to play.
-  </p>
+      {/* Payments & withdrawals */}
+      <section className="card" aria-labelledby="payments-withdrawals">
+        <h2 className="h2" id="payments-withdrawals">
+          Payments, withdrawals and what “fast” really means
+        </h2>
+        <p className="p">
+          “Fast withdrawals” is one of the most common claims in casino marketing, but the real speed depends
+          on your region, payment method, and account status. A casino can process withdrawals quickly after
+          verification, while first time payouts may take longer due to checks.
+        </p>
+        <p className="p">
+          That’s why we treat payments as a first class topic on country pages. When you choose a country, you
+          should be able to shortlist casinos that match how you actually deposit and withdraw — not just what
+          looks good on a landing page.
+        </p>
+        <ul className="p">
+          <li>
+            <b>Pick a comfortable method first:</b> then choose casinos that support it reliably in your country.
+          </li>
+          <li>
+            <b>Expect KYC:</b> prepare documents early if you want fewer delays when withdrawing.
+          </li>
+          <li>
+            <b>Read limits and conditions:</b> minimum/maximum withdrawal rules and fees can matter more than the headline.
+          </li>
+        </ul>
+      </section>
 
-  <h3 className="h2" style={{ marginTop: 10 }}>
-    Should I choose a casino based on the biggest bonus?
-  </h3>
-  <p className="p">
-    Usually no. Start with payments and withdrawals, then evaluate bonuses. A large offer with strict wagering
-    requirements can be worse than a smaller but clearer one.
-  </p>
+      {/* Mini FAQ */}
+      <section className="card" aria-labelledby="quick-questions">
+        <h2 className="h2" id="quick-questions">
+          Quick questions
+        </h2>
 
-  <h3 className="h2" style={{ marginTop: 10 }}>
-    Why do you link country pages to guides?
-  </h3>
-  <p className="p">
-    Country pages give context; guides explain mechanics. For example, a country page may mention verification,
-    while a guide explains what KYC typically involves and how to prepare.
-  </p>
-</section>
+        <article aria-labelledby="qq-1">
+          <h3 className="h2" id="qq-1" style={{ marginTop: 10 }}>
+            Can a casino be available in my country but still be a bad fit?
+          </h3>
+          <p className="p">
+            Yes. Availability only means access. Fit depends on payments, withdrawal expectations, mobile usability,
+            and whether the rules match how you plan to play.
+          </p>
+        </article>
+
+        <article aria-labelledby="qq-2">
+          <h3 className="h2" id="qq-2" style={{ marginTop: 10 }}>
+            Should I choose a casino based on the biggest bonus?
+          </h3>
+          <p className="p">
+            Usually no. Start with payments and withdrawals, then evaluate bonuses. A large offer with strict wagering
+            requirements can be worse than a smaller but clearer one.
+          </p>
+        </article>
+
+        <article aria-labelledby="qq-3">
+          <h3 className="h2" id="qq-3" style={{ marginTop: 10 }}>
+            Why do you link country pages to guides?
+          </h3>
+          <p className="p">
+            Country pages give context; guides explain mechanics. For example, a country page may mention verification,
+            while a guide explains what KYC typically involves and how to prepare.
+          </p>
+        </article>
+      </section>
 
       {/* Country list */}
       {sorted.length === 0 ? (
-        <section className="card">
+        <section className="card" aria-label="Countries">
           <h2 className="h2">Countries</h2>
           <p className="p">No countries yet.</p>
         </section>
@@ -288,7 +310,15 @@ export default async function CountriesPage() {
 
                 <div className="hr" />
 
-                <nav style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <nav
+                  aria-label={`Country links: ${name}`}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
                   <Link href={`/countries/${code}`}>Open country page →</Link>
                   <span className="small">Region code: {code}</span>
                 </nav>
@@ -299,8 +329,10 @@ export default async function CountriesPage() {
       )}
 
       {/* Responsible play */}
-      <section className="card">
-        <h2 className="h2">Responsible play</h2>
+      <section className="card" aria-labelledby="responsible-play">
+        <h2 className="h2" id="responsible-play">
+          Responsible play
+        </h2>
         <p className="p">
           Gambling should be treated as entertainment, not income. Read the rules, set personal limits, and
           avoid chasing losses. If gambling stops being fun, consider seeking help through local support

@@ -7,10 +7,7 @@ import { getGuides, getGuideBySlug } from "@/lib/guides";
 import { getCasinos } from "@/lib/casinos";
 import { getCountries } from "@/lib/countries";
 import { jsonLd } from "@/lib/schema";
-
-const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
-).replace(/\/$/, "");
+import { absoluteUrl } from "@/lib/site";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -46,9 +43,9 @@ function buildBreadcrumbJsonLd(title: string, slug: string) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Guides", item: `${SITE_URL}/guides` },
-      { "@type": "ListItem", position: 3, name: title, item: `${SITE_URL}/guides/${slug}` },
+      { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Guides", item: absoluteUrl("/guides") },
+      { "@type": "ListItem", position: 3, name: title, item: absoluteUrl(`/guides/${slug}`) },
     ],
   });
 }
@@ -119,13 +116,13 @@ export async function generateMetadata(
       : `Read our guide: ${title}. Practical tips, steps, and internal links.`;
 
   const canonicalPath = `/guides/${String(guide.slug)}`;
-  const canonicalAbs = `${SITE_URL}${canonicalPath}`;
+  const canonicalAbs = absoluteUrl(canonicalPath);
 
-  const ogPath =
-    `/og?type=guide&title=${encodeURIComponent(title)}` +
-    `&subtitle=${encodeURIComponent("Step-by-step casino guide")}`;
-
-  const ogAbs = `${SITE_URL}${ogPath}`;
+  const ogAbs = absoluteUrl(
+    `/og?type=guide&title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(
+      "Step-by-step casino guide"
+    )}`
+  );
 
   return {
     title,
@@ -193,13 +190,23 @@ export default async function GuidePage({ params }: PageProps) {
         />
       ) : null}
 
-      <article className="grid" style={{ gap: 18 }}>
+      <main className="grid" style={{ gap: 18 }}>
         {/* HERO */}
         <header className="card" style={{ padding: 22 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
+          >
             <p className="badge">📘 Guide</p>
 
-            <nav aria-label="Guide page links" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <nav
+              aria-label="Guide page links"
+              style={{ display: "flex", gap: 10, flexWrap: "wrap" }}
+            >
               <Link className="navlink" href="/guides">
                 ← Back to guides
               </Link>
@@ -227,9 +234,7 @@ export default async function GuidePage({ params }: PageProps) {
           <div className="hr" />
 
           {guide.content ? (
-            <div style={{ lineHeight: 1.65, color: "var(--text)" }}>
-              {String(guide.content)}
-            </div>
+            <div style={{ lineHeight: 1.65, color: "var(--text)" }}>{String(guide.content)}</div>
           ) : (
             <p className="p">
               Content is not provided yet. Add <span className="kbd">content</span> field to guides.json
@@ -360,7 +365,7 @@ export default async function GuidePage({ params }: PageProps) {
             </Link>
           </nav>
         </section>
-      </article>
+      </main>
     </>
   );
 }

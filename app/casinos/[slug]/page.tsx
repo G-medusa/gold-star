@@ -8,14 +8,12 @@ import { getCasinoBySlug, getCasinos } from "@/lib/casinos";
 import { getCountries } from "@/lib/countries";
 import { getGuidesByCasinoSlug } from "@/lib/guides";
 import { jsonLd } from "@/lib/schema";
-
-const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
-).replace(/\/$/, "");
+import { SITE_URL, absoluteUrl } from "@/lib/site";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
+
 type CasinoLite = {
   id: string;
   slug: string;
@@ -155,8 +153,8 @@ function buildBreadcrumbJsonLd(casinoName: string, slug: string) {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Casinos", item: `${SITE_URL}/casinos` },
-      { "@type": "ListItem", position: 3, name: casinoName, item: `${SITE_URL}/casinos/${slug}` },
+      { "@type": "ListItem", position: 2, name: "Casinos", item: absoluteUrl("/casinos") },
+      { "@type": "ListItem", position: 3, name: casinoName, item: absoluteUrl(`/casinos/${slug}`) },
     ],
   });
 }
@@ -173,7 +171,7 @@ function buildReviewJsonLd(
     itemReviewed: {
       "@type": "Organization",
       name: casinoName,
-      url: `${SITE_URL}/casinos/${slug}`,
+      url: absoluteUrl(`/casinos/${slug}`),
     },
     reviewBody: description,
   };
@@ -230,16 +228,16 @@ export async function generateMetadata(
       : `Read our review of ${casino.name}: bonuses, features, and key details.`;
 
   const canonicalPath = `/casinos/${casino.slug}`;
-  const canonicalAbs = `${SITE_URL}${canonicalPath}`;
+  const canonicalAbs = absoluteUrl(canonicalPath);
 
   const rating = typeof casino.rating === "number" ? casino.rating.toFixed(1) : "";
 
-  // пробуем взять ogImage из assets
+  // try to take ogImage from assets
   const assets = casino.assets;
   const ogImageFromAssets =
     assets && typeof assets.ogImage === "string" ? assets.ogImage : null;
 
-  // fallback на старый /og
+  // fallback to dynamic /og
   const ogPath =
     `/og?type=casino&title=${encodeURIComponent(title)}` +
     `&subtitle=${encodeURIComponent("Bonuses • Payments • Features")}` +
@@ -248,13 +246,13 @@ export async function generateMetadata(
   const ogAbs = ogImageFromAssets
     ? ogImageFromAssets.startsWith("http")
       ? ogImageFromAssets
-      : `${SITE_URL}${ogImageFromAssets}`
-    : `${SITE_URL}${ogPath}`;
+      : absoluteUrl(ogImageFromAssets)
+    : absoluteUrl(ogPath);
 
   return {
     title,
     description,
-    alternates: { canonical: canonicalPath },
+    alternates: { canonical: canonicalAbs },
     openGraph: {
       title,
       description,
@@ -278,7 +276,7 @@ export default async function CasinoPage({ params }: PageProps) {
   const casino = (await getCasinoBySlug(slug)) as unknown as CasinoLite | null;
   if (!casino) notFound();
 
-  // assets (строгое чтение)
+  // assets (strict read)
   const assetsRec = asRecord(casino.assets);
   const assets = assetsRec
     ? {
@@ -375,7 +373,7 @@ export default async function CasinoPage({ params }: PageProps) {
 
   const casinoName = String(casino.name);
   const casinoSlug = String(casino.slug);
-  const canonicalUrl = `/casinos/${casinoSlug}`;
+  const canonicalPath = `/casinos/${casinoSlug}`;
 
   return (
     <>
@@ -908,7 +906,7 @@ export default async function CasinoPage({ params }: PageProps) {
           </nav>
 
           <p className="small" style={{ marginTop: 12 }}>
-            Canonical: <Link href={canonicalUrl}>{canonicalUrl}</Link>
+            Canonical: <Link href={canonicalPath}>{canonicalPath}</Link>
           </p>
         </section>
       </article>

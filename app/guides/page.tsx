@@ -2,17 +2,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { absoluteUrl } from "@/lib/site";
 import { getGuides } from "@/lib/guides";
 import { jsonLd } from "@/lib/schema";
-
-const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app"
-).replace(/\/$/, "");
 
 export const metadata: Metadata = {
   title: "Guides",
   description: "Guides and tips to help you choose and use online casinos.",
-  alternates: { canonical: `${SITE_URL}/guides` },
+  alternates: { canonical: absoluteUrl("/guides") },
+  openGraph: {
+    title: "Guides",
+    description: "Guides and tips to help you choose and use online casinos.",
+    url: absoluteUrl("/guides"),
+    type: "website",
+  },
 };
 
 type GuideLite = {
@@ -28,8 +31,8 @@ function buildBreadcrumbJsonLd() {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Guides", item: `${SITE_URL}/guides` },
+      { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Guides", item: absoluteUrl("/guides") },
     ],
   });
 }
@@ -60,7 +63,7 @@ export default async function GuidesPage() {
   const itemListLd = buildItemListJsonLd(
     sorted.map((g) => ({
       name: String(g.title ?? g.slug ?? "Guide"),
-      url: `${SITE_URL}/guides/${String(g.slug)}`,
+      url: absoluteUrl(`/guides/${String(g.slug)}`),
     }))
   );
 
@@ -77,22 +80,31 @@ export default async function GuidesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
       />
 
-      <article className="grid" style={{ gap: 18 }}>
-        {/* HEADER */}
+      <main className="grid" style={{ gap: 18 }}>
         <header className="card" style={{ padding: 22 }}>
           <p className="badge">⭐ Gold Star</p>
           <h1 className="h1" style={{ marginTop: 10 }}>
             Guides
           </h1>
           <p className="p" style={{ maxWidth: 820 }}>
-            Practical guides about choosing casinos, payments, bonuses, and responsible play. Each guide
-            links to related casinos and countries.
+            Practical guides about choosing casinos, payments, bonuses, and responsible play. Each
+            guide links to related casinos and countries.
           </p>
+
+          <nav aria-label="Related sections" style={{ marginTop: 12 }}>
+            <ul style={{ display: "flex", flexWrap: "wrap", gap: 12, padding: 0, margin: 0, listStyle: "none" }}>
+              <li>
+                <Link href="/casinos">Casinos</Link>
+              </li>
+              <li>
+                <Link href="/countries">Countries</Link>
+              </li>
+            </ul>
+          </nav>
         </header>
 
-        {/* LIST */}
         {sorted.length === 0 ? (
-          <section className="card">
+          <section className="card" aria-label="Guides">
             <p className="p">No guides yet.</p>
           </section>
         ) : (
@@ -120,16 +132,26 @@ export default async function GuidesPage() {
 
                       <p className="p">{desc}</p>
 
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-                        <span className="kbd">guide</span>
-                        <span className="kbd">faq</span>
-                        {casinosCount > 0 ? <span className="kbd">{casinosCount} casinos</span> : null}
-                        {countriesCount > 0 ? <span className="kbd">{countriesCount} countries</span> : null}
-                      </div>
+                      <ul
+                        aria-label="Guide highlights"
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          flexWrap: "wrap",
+                          marginTop: 12,
+                          padding: 0,
+                          listStyle: "none",
+                        }}
+                      >
+                        <li className="kbd">guide</li>
+                        <li className="kbd">faq</li>
+                        {casinosCount > 0 ? <li className="kbd">{casinosCount} casinos</li> : null}
+                        {countriesCount > 0 ? <li className="kbd">{countriesCount} countries</li> : null}
+                      </ul>
 
                       <div className="hr" />
 
-                      <div
+                      <footer
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
@@ -139,7 +161,7 @@ export default async function GuidesPage() {
                       >
                         <Link href={`/guides/${String(g.slug)}`}>Read guide →</Link>
                         <span className="small">Internal linking ready</span>
-                      </div>
+                      </footer>
                     </article>
                   </li>
                 );
@@ -147,7 +169,7 @@ export default async function GuidesPage() {
             </ul>
           </section>
         )}
-      </article>
+      </main>
     </>
   );
 }

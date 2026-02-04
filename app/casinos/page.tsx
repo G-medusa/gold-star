@@ -4,14 +4,13 @@ import Link from "next/link";
 
 import { getCasinos } from "@/lib/casinos";
 import { jsonLd } from "@/lib/schema";
-
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://gold-star-ten.vercel.app").replace(/\/$/, "");
+import { SITE_URL, absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Online Casino Reviews",
   description:
     "Browse online casino reviews with ratings, key features, and quick links to country availability and guides.",
-  alternates: { canonical: `${SITE_URL}/casinos` },
+  alternates: { canonical: absoluteUrl("/casinos") },
 };
 
 type CasinoLite = {
@@ -39,7 +38,7 @@ function buildBreadcrumbJsonLd() {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "Casinos", item: `${SITE_URL}/casinos` },
+      { "@type": "ListItem", position: 2, name: "Casinos", item: absoluteUrl("/casinos") },
     ],
   });
 }
@@ -75,7 +74,7 @@ export default async function CasinosPage() {
   const itemListLd = buildItemListJsonLd(
     sorted.slice(0, 200).map((c) => ({
       name: String(c.name ?? c.slug ?? "Casino"),
-      url: `${SITE_URL}/casinos/${String(c.slug)}`,
+      url: absoluteUrl(`/casinos/${String(c.slug)}`),
     }))
   );
 
@@ -206,65 +205,66 @@ export default async function CasinosPage() {
           For deeper explanations, see <Link href="/guides">our guides</Link> (withdrawals, bonuses, and verification).
         </p>
       </section>
-{/* Payment methods and flexibility */}
-<section className="card">
-  <h2 className="h2">Payment methods and flexibility</h2>
-  <p className="p">
-    Payment options are one of the most practical differences between casinos. While most platforms support
-    basic methods like cards or e-wallets, the real experience depends on how flexible and transparent those
-    options are in practice — especially when it comes to withdrawals.
-  </p>
-  <p className="p">
-    Some casinos focus on traditional banking methods, others prioritize e-wallets or newer alternatives.
-    For players, the important part is not just availability, but how smoothly deposits and payouts are
-    processed, whether fees apply, and what limits exist for different methods.
-  </p>
-  <ul className="p">
-    <li>
-      <b>Consistency:</b> using the same method for deposits and withdrawals often reduces delays.
-    </li>
-    <li>
-      <b>Withdrawal reality:</b> “instant” withdrawals usually apply after verification and within set limits.
-    </li>
-    <li>
-      <b>Regional differences:</b> payment availability and processing times can vary significantly by country.
-    </li>
-  </ul>
-  <p className="small">
-    If payments are your main concern, combine casino reviews with{" "}
-    <Link href="/countries">country pages</Link> to see what typically works best in your region.
-  </p>
-</section>
 
-{/* Promotions and ongoing offers */}
-<section className="card">
-  <h2 className="h2">Promotions, bonuses and player competitions</h2>
-  <p className="p">
-    Promotions are not limited to welcome bonuses. Many casinos offer ongoing incentives such as reload
-    bonuses, free spins, cashback programs, loyalty rewards, or time limited competitions. These can add
-    value, but only if the conditions match how you actually play.
-  </p>
-  <p className="p">
-    Large headline bonuses often come with higher wagering requirements, while smaller recurring offers
-    may be easier to use over time. Competitions and leaderboards can appeal to frequent players, but they
-    usually reward volume rather than casual play.
-  </p>
-  <ul className="p">
-    <li>
-      <b>Welcome bonuses:</b> good for testing a casino, but always check wagering and exclusions.
-    </li>
-    <li>
-      <b>Reload & cashback:</b> often more relevant for regular players than one time offers.
-    </li>
-    <li>
-      <b>Tournaments & competitions:</b> can add excitement, but favor high activity levels.
-    </li>
-  </ul>
-  <p className="small">
-    In our reviews, promotions are explained in context — not as promises, but as optional extras with
-    clear conditions.
-  </p>
-</section>
+      {/* Payment methods and flexibility */}
+      <section className="card">
+        <h2 className="h2">Payment methods and flexibility</h2>
+        <p className="p">
+          Payment options are one of the most practical differences between casinos. While most platforms support
+          basic methods like cards or e-wallets, the real experience depends on how flexible and transparent those
+          options are in practice — especially when it comes to withdrawals.
+        </p>
+        <p className="p">
+          Some casinos focus on traditional banking methods, others prioritize e-wallets or newer alternatives.
+          For players, the important part is not just availability, but how smoothly deposits and payouts are
+          processed, whether fees apply, and what limits exist for different methods.
+        </p>
+        <ul className="p">
+          <li>
+            <b>Consistency:</b> using the same method for deposits and withdrawals often reduces delays.
+          </li>
+          <li>
+            <b>Withdrawal reality:</b> “instant” withdrawals usually apply after verification and within set limits.
+          </li>
+          <li>
+            <b>Regional differences:</b> payment availability and processing times can vary significantly by country.
+          </li>
+        </ul>
+        <p className="small">
+          If payments are your main concern, combine casino reviews with{" "}
+          <Link href="/countries">country pages</Link> to see what typically works best in your region.
+        </p>
+      </section>
+
+      {/* Promotions and ongoing offers */}
+      <section className="card">
+        <h2 className="h2">Promotions, bonuses and player competitions</h2>
+        <p className="p">
+          Promotions are not limited to welcome bonuses. Many casinos offer ongoing incentives such as reload
+          bonuses, free spins, cashback programs, loyalty rewards, or time limited competitions. These can add
+          value, but only if the conditions match how you actually play.
+        </p>
+        <p className="p">
+          Large headline bonuses often come with higher wagering requirements, while smaller recurring offers
+          may be easier to use over time. Competitions and leaderboards can appeal to frequent players, but they
+          usually reward volume rather than casual play.
+        </p>
+        <ul className="p">
+          <li>
+            <b>Welcome bonuses:</b> good for testing a casino, but always check wagering and exclusions.
+          </li>
+          <li>
+            <b>Reload & cashback:</b> often more relevant for regular players than one time offers.
+          </li>
+          <li>
+            <b>Tournaments & competitions:</b> can add excitement, but favor high activity levels.
+          </li>
+        </ul>
+        <p className="small">
+          In our reviews, promotions are explained in context — not as promises, but as optional extras with
+          clear conditions.
+        </p>
+      </section>
 
       {/* Catalog */}
       {sorted.length === 0 ? (
